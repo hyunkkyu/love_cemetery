@@ -8,6 +8,8 @@ function serialize(doc: Record<string, unknown>) {
   return { id: String(_id), ...rest }
 }
 
+export const maxDuration = 30
+
 export async function POST(request: NextRequest) {
   let body: Record<string, unknown>
   try {

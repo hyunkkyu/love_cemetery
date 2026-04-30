@@ -10,6 +10,8 @@ const FeedbackSchema = new mongoose.Schema({
 
 const Feedback = mongoose.models.Feedback || mongoose.model("Feedback", FeedbackSchema)
 
+export const maxDuration = 30
+
 export async function POST(request: NextRequest) {
   await connectDB()
   const { action, userId, nickname, message } = await request.json()

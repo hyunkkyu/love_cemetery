@@ -1,6 +1,6 @@
 async function callPartner(action: string, payload: Record<string, unknown> = {}) {
   const controller = new AbortController()
-  const timeout = setTimeout(() => controller.abort(), 15000)
+  const timeout = setTimeout(() => controller.abort(), 30000)
   try {
     const res = await fetch("/api/partner", {
       method: "POST",
