@@ -7,9 +7,9 @@
   --color-cemetery-border: #2e2e48;
   --color-cemetery-accent: #8b7bf7;
   --color-cemetery-accent-dim: #6a5ad0;
-  --color-cemetery-ghost: #9999bb;
-  --color-cemetery-text: #d0d0e8;
-  --color-cemetery-heading: #f0f0f8;
+  --color-cemetery-ghost: #b0b0cc;
+  --color-cemetery-text: #e0e0f0;
+  --color-cemetery-heading: #f5f5ff;
   --color-tombstone: #2a2a42;
   --color-tombstone-light: #3a3a55;
   --color-moss: #2d5a3d;
@@ -30,6 +30,11 @@ body {
   background-color: var(--color-cemetery-bg);
   color: var(--color-cemetery-text);
   color-scheme: dark;
+  font-size: 15px;
+  line-height: 1.6;
+  letter-spacing: -0.01em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* 날짜 입력 */

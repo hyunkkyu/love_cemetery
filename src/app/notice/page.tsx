@@ -18,6 +18,18 @@ const TYPE_STYLE: Record<string, { label: string; color: string; bg: string }> =
 
 const NOTICES: Notice[] = [
   {
+    version: "2.0.0",
+    date: "2026-04-30",
+    title: "MongoDB Atlas 전환 & 튜토리얼 & 가독성 개선",
+    type: "improve",
+    items: [
+      "☁️ MongoDB Atlas 클라우드 전환: Vercel + 내부망 + 로컬 모두 동일 DB 공유",
+      "📖 신규 유저 튜토리얼: 첫 로그인 시 7단계 온보딩 가이드",
+      "👁️ 가독성 대폭 개선: 텍스트 밝기/크기/자간 조정, 폰트 렌더링 최적화",
+      "🔗 GitHub 연동: 소스코드 GitHub에 push + Vercel 자동 배포",
+    ],
+  },
+  {
     version: "1.9.0",
     date: "2026-04-29",
     title: "연애 상담소 & 공지사항",

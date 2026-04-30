@@ -5,6 +5,7 @@ import { NavBar } from "@/components/NavBar"
 import { FeedbackWidget } from "@/components/FeedbackWidget"
 import { SessionGuard } from "@/components/SessionGuard"
 import { DailyFortune } from "@/components/DailyFortune"
+import { Tutorial } from "@/components/Tutorial"
 
 export const metadata: Metadata = {
   title: "명예의전당 | Hall of Fame",
@@ -50,6 +51,7 @@ export default function RootLayout({
             </main>
           </div>
           <SessionGuard />
+          <Tutorial />
           <DailyFortune />
           <FeedbackWidget />
         </AuthProvider>
