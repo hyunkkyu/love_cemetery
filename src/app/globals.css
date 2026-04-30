@@ -1,0 +1,274 @@
+@import "tailwindcss";
+
+@theme {
+  --color-cemetery-bg: #0c0c14;
+  --color-cemetery-surface: #151522;
+  --color-cemetery-card: #1c1c30;
+  --color-cemetery-border: #2e2e48;
+  --color-cemetery-accent: #8b7bf7;
+  --color-cemetery-accent-dim: #6a5ad0;
+  --color-cemetery-ghost: #9999bb;
+  --color-cemetery-text: #d0d0e8;
+  --color-cemetery-heading: #f0f0f8;
+  --color-tombstone: #2a2a42;
+  --color-tombstone-light: #3a3a55;
+  --color-moss: #2d5a3d;
+  --color-moss-light: #3d7a5d;
+  --color-fog: rgba(200, 200, 230, 0.04);
+  --color-candle: #ffaa33;
+  --color-candle-glow: rgba(255, 170, 51, 0.3);
+  --color-cute-pink: #ff8ec4;
+  --color-cute-mint: #7eecd0;
+  --color-cute-yellow: #ffe566;
+
+  --font-sans: 'Gowun Batang', 'Pretendard', system-ui, sans-serif;
+  --font-gothic: 'Noto Serif KR', Georgia, serif;
+  --font-cute: 'Cute Font', cursive;
+}
+
+body {
+  background-color: var(--color-cemetery-bg);
+  color: var(--color-cemetery-text);
+  color-scheme: dark;
+}
+
+/* 날짜 입력 */
+input[type="date"],
+input[type="time"] {
+  color-scheme: dark;
+}
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.7);
+  cursor: pointer;
+}
+
+/* 별 반짝이 배경 */
+@keyframes twinkle {
+  0%, 100% { opacity: 0.2; }
+  50% { opacity: 0.8; }
+}
+
+/* 안개 */
+@keyframes fog-drift {
+  0% { transform: translateX(-10%) translateY(0); opacity: 0.3; }
+  50% { transform: translateX(5%) translateY(-10px); opacity: 0.5; }
+  100% { transform: translateX(-10%) translateY(0); opacity: 0.3; }
+}
+.fog-layer {
+  animation: fog-drift 20s ease-in-out infinite;
+}
+
+/* 촛불 */
+@keyframes candle-flicker {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  25% { opacity: 0.8; transform: scale(0.97); }
+  50% { opacity: 0.9; transform: scale(1.02); }
+  75% { opacity: 0.85; transform: scale(0.98); }
+}
+.candle-glow {
+  animation: candle-flicker 3s ease-in-out infinite;
+}
+
+/* 묘비 호버 - 더 부드럽게 */
+.tombstone-hover {
+  transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.tombstone-hover:hover {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow:
+    0 12px 40px rgba(139, 123, 247, 0.15),
+    0 0 20px rgba(139, 123, 247, 0.05);
+}
+
+/* 유령 부유 - 더 부드럽게 */
+@keyframes ghost-float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  25% { transform: translateY(-6px) rotate(1deg); }
+  50% { transform: translateY(-10px) rotate(0deg); }
+  75% { transform: translateY(-6px) rotate(-1deg); }
+}
+.ghost-float {
+  animation: ghost-float 4s ease-in-out infinite;
+}
+
+/* 하트 비트 */
+@keyframes heartbeat {
+  0%, 100% { transform: scale(1); }
+  15% { transform: scale(1.15); }
+  30% { transform: scale(1); }
+  45% { transform: scale(1.1); }
+}
+.heartbeat {
+  animation: heartbeat 2s ease-in-out infinite;
+}
+
+/* 반짝 */
+@keyframes sparkle {
+  0%, 100% { opacity: 0; transform: scale(0) rotate(0deg); }
+  50% { opacity: 1; transform: scale(1) rotate(180deg); }
+}
+.sparkle {
+  animation: sparkle 2s ease-in-out infinite;
+}
+
+/* 오프닝 글로우 */
+.intro-glow {
+  text-shadow:
+    0 0 20px rgba(139, 123, 247, 0.6),
+    0 0 60px rgba(139, 123, 247, 0.3),
+    0 0 100px rgba(139, 123, 247, 0.1);
+}
+
+/* 페이드 인 */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in {
+  animation: fade-in 0.6s ease-out;
+}
+
+/* 슬라이드 업 (순차 등장용) */
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-slide-up {
+  animation: slide-up 0.5s ease-out both;
+}
+
+/* 귀여운 폰트 클래스 */
+.font-cute {
+  font-family: var(--font-cute);
+}
+
+/* 페이지 전환 느낌 */
+@keyframes page-enter {
+  from { opacity: 0; transform: translateY(12px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.animate-page-enter {
+  animation: page-enter 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* 글자 타이핑 효과 */
+@keyframes typing-cursor {
+  0%, 100% { border-right-color: transparent; }
+  50% { border-right-color: var(--color-cemetery-accent); }
+}
+
+/* 유령 등장 */
+@keyframes ghost-appear {
+  0% { opacity: 0; transform: scale(0.5) translateY(20px); }
+  60% { opacity: 1; transform: scale(1.1) translateY(-5px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+.ghost-appear {
+  animation: ghost-appear 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* 카드 순차 등장 */
+.stagger-1 { animation-delay: 0.05s; }
+.stagger-2 { animation-delay: 0.1s; }
+.stagger-3 { animation-delay: 0.15s; }
+.stagger-4 { animation-delay: 0.2s; }
+.stagger-5 { animation-delay: 0.25s; }
+
+/* 으스스한 글로우 */
+.spooky-glow {
+  text-shadow:
+    0 0 10px rgba(139, 123, 247, 0.4),
+    0 0 30px rgba(139, 123, 247, 0.15);
+}
+
+/* 귀여운 버튼 눌림 */
+.cute-press {
+  transition: transform 0.15s ease;
+}
+.cute-press:active {
+  transform: scale(0.95);
+}
+
+/* ===== 핑크 썸 테마 ===== */
+@keyframes float-hearts {
+  0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; }
+}
+
+@keyframes sway {
+  0%, 100% { transform: translateX(0) rotate(-2deg); }
+  50% { transform: translateX(8px) rotate(2deg); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.love-sway {
+  animation: sway 3s ease-in-out infinite;
+}
+
+.love-shimmer {
+  background: linear-gradient(90deg, transparent 0%, rgba(255,142,196,0.15) 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: shimmer 3s ease-in-out infinite;
+}
+
+.love-card {
+  background: linear-gradient(135deg, #1f1428 0%, #2a1530 50%, #1f1428 100%);
+  border-color: rgba(255,142,196,0.2);
+  transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.love-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(255,142,196,0.15);
+  border-color: rgba(255,142,196,0.4);
+}
+
+.love-input {
+  background: rgba(255,142,196,0.05);
+  border: 1px solid rgba(255,142,196,0.15);
+  color: #f0d0e0;
+}
+.love-input:focus {
+  border-color: rgba(255,142,196,0.5);
+  outline: none;
+  box-shadow: 0 0 12px rgba(255,142,196,0.1);
+}
+.love-input::placeholder {
+  color: rgba(255,142,196,0.3);
+}
+
+.love-btn {
+  background: linear-gradient(135deg, #ff6eb4 0%, #ff8ec4 50%, #ffaad4 100%);
+  color: white;
+  transition: all 0.2s ease;
+}
+.love-btn:hover {
+  box-shadow: 0 4px 20px rgba(255,142,196,0.4);
+  transform: translateY(-1px);
+}
+.love-btn:active {
+  transform: scale(0.97);
+}
+.love-btn:disabled {
+  opacity: 0.5;
+  transform: none;
+  box-shadow: none;
+}
+
+/* 스크롤바 - 더 귀엽게 */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--color-cemetery-border); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-cemetery-accent); }
+
+/* 셀렉션 */
+::selection {
+  background: rgba(139, 123, 247, 0.3);
+  color: white;
+}
