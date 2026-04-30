@@ -36,21 +36,29 @@ export default function PartnerPage() {
       ])
       setPartners(partnerRes.data || [])
       setRequests(requestRes.data || [])
-    } catch { /* ignore */ }
+    } catch (err) {
+      console.error("partner reload error:", err)
+    }
   }
 
   const loadUsers = async () => {
-    if (allUsers.length > 0) {
-      setShowUserList(!showUserList)
+    if (showUserList && allUsers.length > 0) {
+      setShowUserList(false)
       return
     }
     setLoading(true)
     try {
       const res = await dbPartner.userList()
-      setAllUsers(res.data || [])
+      const users = res.data || []
+      setAllUsers(users)
       setShowUserList(true)
-    } catch {
-      alert("유저 목록을 불러올 수 없습니다")
+      if (users.length === 0) {
+        setMessage("사주 프로필을 등록한 유저가 없어요. 먼저 커뮤니티 > 궁합매칭에서 프로필을 등록해주세요!")
+        setTimeout(() => setMessage(""), 5000)
+      }
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : "유저 목록을 불러올 수 없습니다")
+      setTimeout(() => setMessage(""), 3000)
     }
     setLoading(false)
   }
