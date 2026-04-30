@@ -8,8 +8,10 @@ async function callAPI(action: string, _userId: string | undefined, payload: Rec
       body: JSON.stringify({ action, ...payload }),
       signal: controller.signal,
     })
-    const json = await res.json()
-    if (!res.ok || json.error) throw new Error(json.error || `API 오류: ${res.status}`)
+    const text = await res.text()
+    if (!text) throw new Error("서버 응답이 비어있습니다")
+    const json = JSON.parse(text)
+    if (!res.ok || json.error) throw new Error(json.error || "API 오류: " + res.status)
     return json
   } catch (error) {
     if (error instanceof Error && error.name === "AbortError") throw new Error("요청 시간이 초과되었습니다")

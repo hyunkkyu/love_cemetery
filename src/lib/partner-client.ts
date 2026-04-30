@@ -8,7 +8,9 @@ async function callPartner(action: string, payload: Record<string, unknown> = {}
       body: JSON.stringify({ action, ...payload }),
       signal: controller.signal,
     })
-    const json = await res.json()
+    const text = await res.text()
+    if (!text) throw new Error("서버 응답이 비어있습니다")
+    const json = JSON.parse(text)
     if (!res.ok || json.error) throw new Error(json.error || "API 오류: " + res.status)
     return json
   } catch (error) {

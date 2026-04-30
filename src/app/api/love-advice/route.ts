@@ -49,7 +49,7 @@ ${selectedPast.graveReason ? `묻힌 사연: ${selectedPast.graveReason}` : ""}`
 
 따뜻하고 설레는 톤으로, 하지만 뼈때리는 현실 조언도 섞어서 작성해주세요. "~거든요", "~이에요" 같은 다정한 구어체로 써주세요.`
 
-    const advice = await callLLM(prompt)
+    const advice = await callLLM(prompt, "medium")
     return NextResponse.json({ advice })
   } catch (error) {
     const msg = error instanceof Error ? error.message : "분석 중 오류"

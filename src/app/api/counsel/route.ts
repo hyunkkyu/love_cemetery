@@ -146,7 +146,7 @@ ${question}
 5. 필요하면 뼈때리는 직언도 (단, 따뜻한 톤으로)
 6. 500~800자로 답변`
 
-        const answer = await callLLM(prompt)
+        const answer = await callLLM(prompt, "medium")
 
         // 상담 기록 저장
         await Counsel.create({ userId, question, answer, coinUsed })
