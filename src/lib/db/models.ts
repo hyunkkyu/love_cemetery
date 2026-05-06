@@ -51,6 +51,9 @@ export interface IUserData extends Document {
   coins: number
   ownedItems: Array<{ itemId: string; purchasedAt: string; equippedOn?: string }>
   itemPositions: Record<string, Array<{ itemId: string; x: number; y: number }>>
+  inviteCode?: string
+  invitedBy?: string
+  inviteCount?: number
 }
 
 const UserDataSchema = new Schema<IUserData>({
