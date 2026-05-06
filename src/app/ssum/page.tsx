@@ -98,17 +98,18 @@ export default function SsumPage() {
   }
 
   const handleEdit = (s: SsumRecord) => {
+    const data = s as unknown as Record<string, string>
     setForm({
-      nickname: s.nickname || "",
-      birthDate: (s as Record<string, unknown>).birthDate as string || "",
-      birthTime: (s as Record<string, unknown>).birthTime as string || "",
-      myBirthDate: (s as Record<string, unknown>).myBirthDate as string || "",
-      myBirthTime: (s as Record<string, unknown>).myBirthTime as string || "",
-      duration: s.duration || "",
-      howWeMet: s.howWeMet || "",
-      myOpinion: s.myOpinion || "",
-      lastMessage: s.lastMessage || "",
-      persona: s.persona || "",
+      nickname: data.nickname || "",
+      birthDate: data.birthDate || "",
+      birthTime: data.birthTime || "",
+      myBirthDate: data.myBirthDate || "",
+      myBirthTime: data.myBirthTime || "",
+      duration: data.duration || "",
+      howWeMet: data.howWeMet || "",
+      myOpinion: data.myOpinion || "",
+      lastMessage: data.lastMessage || "",
+      persona: data.persona || "",
     })
     setSignals(s.signals || [])
     setEditingId(s.id)
