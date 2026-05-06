@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
 import { callLLM } from "@/lib/llm"
+import { connectDB } from "@/lib/db/mongoose"
+import { AiLog } from "@/lib/db/models"
+import { auth } from "@/lib/auth"
 
 export const maxDuration = 60
 
@@ -50,6 +53,14 @@ ${selectedPast.graveReason ? `묻힌 사연: ${selectedPast.graveReason}` : ""}`
 따뜻하고 설레는 톤으로, 하지만 뼈때리는 현실 조언도 섞어서 작성해주세요. "~거든요", "~이에요" 같은 다정한 구어체로 써주세요.`
 
     const advice = await callLLM(prompt, "medium")
+
+    try {
+      await connectDB()
+      const session = await auth()
+      const userId = (session?.user as { id?: string })?.id
+      await AiLog.create({ userId, type: "love-advice", input: { crushName: person.nickname }, output: advice, model: "gpt-4.1-mini" })
+    } catch { /* 저장 실패해도 결과는 반환 */ }
+
     return NextResponse.json({ advice })
   } catch (error) {
     const msg = error instanceof Error ? error.message : "분석 중 오류"

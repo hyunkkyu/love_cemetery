@@ -19,7 +19,12 @@ const TOKEN_MAP: Record<ModelTier, number> = {
   light: 500,
 }
 
-const SYSTEM_PROMPT = `당신은 20년 경력의 사주명리학 전문가이자, 솔직하고 재치있는 연애 상담사입니다.
+function getSystemPrompt() {
+  const today = new Date()
+  const dateStr = today.getFullYear() + "-" + String(today.getMonth() + 1).padStart(2, "0") + "-" + String(today.getDate()).padStart(2, "0")
+  return `당신은 20년 경력의 사주명리학 전문가이자, 솔직하고 재치있는 연애 상담사입니다.
+
+## 중요: 오늘 날짜는 ${dateStr}이고 올해는 ${today.getFullYear()}년입니다. 절대 다른 연도를 말하지 마세요.
 
 ## 말투 스타일
 - 친한 언니/형이 카페에서 이야기해주는 것처럼 편안하고 다정한 톤
@@ -37,6 +42,7 @@ const SYSTEM_PROMPT = `당신은 20년 경력의 사주명리학 전문가이자
 - **굵은 소제목**으로 구분
 - 문단 3~4줄 이내
 - 이모지 적절히 사용`
+}
 
 export async function callLLM(prompt: string, tier: ModelTier = "heavy"): Promise<string> {
   if (!OPENAI_API_KEY) {
@@ -59,7 +65,7 @@ export async function callLLM(prompt: string, tier: ModelTier = "heavy"): Promis
       body: JSON.stringify({
         model,
         messages: [
-          { role: "system", content: tier === "light" ? "카톡 대화를 재현하세요. 짧게 1~3줄로 답하세요." : SYSTEM_PROMPT },
+          { role: "system", content: tier === "light" ? "카톡 대화를 재현하세요. 짧게 1~3줄로 답하세요." : getSystemPrompt() },
           { role: "user", content: prompt },
         ],
         temperature: tier === "light" ? 0.9 : 0.8,

@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
 import { callLLM } from "@/lib/llm"
+import { connectDB } from "@/lib/db/mongoose"
+import { AiLog } from "@/lib/db/models"
+import { auth } from "@/lib/auth"
 
 export const maxDuration = 60
 
@@ -75,6 +78,14 @@ ${focusArea || question ? `요청된 주제/질문에 집중하되, 6가지 학�
 - 1500자 이상 상세하게`
 
     const interpretation = await callLLM(prompt, "heavy")
+
+    try {
+      await connectDB()
+      const session = await auth()
+      const userId = (session?.user as { id?: string })?.id
+      await AiLog.create({ userId, type: "manseryeok", input: { birthDate, name, category, question }, output: interpretation, model: "gpt-4.1-mini" })
+    } catch { /* 저장 실패해도 결과는 반환 */ }
+
     return NextResponse.json({ interpretation })
   } catch (error) {
     const msg = error instanceof Error ? error.message : "분석 중 오류"

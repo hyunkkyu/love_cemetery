@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
 import { callLLM } from "@/lib/llm"
+import { connectDB } from "@/lib/db/mongoose"
+import { AiLog } from "@/lib/db/models"
+import { auth } from "@/lib/auth"
 
 export const maxDuration = 60
 
@@ -15,6 +18,15 @@ export async function POST(request: NextRequest) {
     }
 
     const analysis = await callLLM(prompt)
+
+    // 자동 저장
+    try {
+      await connectDB()
+      const session = await auth()
+      const userId = (session?.user as { id?: string })?.id
+      await AiLog.create({ userId, type: body.mode === "compare" ? "compare" : "analyze", input: { nickname: body.nickname }, output: analysis, model: "gpt-4.1-mini" })
+    } catch { /* 저장 실패해도 결과는 반환 */ }
+
     return NextResponse.json({ analysis })
   } catch (error) {
     const message = error instanceof Error ? error.message : "분석 중 오류가 발생했습니다."

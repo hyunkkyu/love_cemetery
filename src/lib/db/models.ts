@@ -13,7 +13,18 @@ const UserSchema = new Schema({
   securityAnswer: String,
 }, { timestamps: true })
 
+// AI 분석 로그 (모든 AI 호출 자동 저장)
+const AiLogSchema = new Schema({
+  userId: { type: String, index: true },
+  type: { type: String, required: true }, // analyze, manseryeok, love-advice, chat, counsel, ssum
+  input: Schema.Types.Mixed,
+  output: String,
+  model: String,
+  tokenEstimate: Number,
+}, { timestamps: true })
+
 export const User = mongoose.models.User || mongoose.model("User", UserSchema)
+export const AiLog = mongoose.models.AiLog || mongoose.model("AiLog", AiLogSchema)
 
 // 묘비
 export interface IGrave extends Document {
