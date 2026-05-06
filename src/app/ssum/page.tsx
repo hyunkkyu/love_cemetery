@@ -23,6 +23,7 @@ export default function SsumPage() {
 
   const [list, setList] = useState<SsumRecord[]>([])
   const [showForm, setShowForm] = useState(false)
+  const [editingId, setEditingId] = useState<string | null>(null)
   const [selected, setSelected] = useState<SsumRecord | null>(null)
   const [analyzing, setAnalyzing] = useState(false)
 
@@ -84,8 +85,9 @@ export default function SsumPage() {
         compatibility = { ...c, elementHarmony: myManseryeok.dominantElement + " ↔ " + manseryeok.dominantElement }
       }
 
-      await dbSsum.save({ ...form, signals, manseryeok, myManseryeok, compatibility })
+      await dbSsum.save({ id: editingId || undefined, ...form, signals, manseryeok, myManseryeok, compatibility })
       setShowForm(false)
+      setEditingId(null)
       setForm({ nickname: "", birthDate: "", birthTime: "", myBirthDate: "", myBirthTime: "", duration: "", howWeMet: "", myOpinion: "", lastMessage: "", persona: "" })
       setSignals([])
       reload()
@@ -93,6 +95,33 @@ export default function SsumPage() {
       alert(err instanceof Error ? err.message : "저장 실패")
     }
     setSaving(false)
+  }
+
+  const handleEdit = (s: SsumRecord) => {
+    setForm({
+      nickname: s.nickname || "",
+      birthDate: (s as Record<string, unknown>).birthDate as string || "",
+      birthTime: (s as Record<string, unknown>).birthTime as string || "",
+      myBirthDate: (s as Record<string, unknown>).myBirthDate as string || "",
+      myBirthTime: (s as Record<string, unknown>).myBirthTime as string || "",
+      duration: s.duration || "",
+      howWeMet: s.howWeMet || "",
+      myOpinion: s.myOpinion || "",
+      lastMessage: s.lastMessage || "",
+      persona: s.persona || "",
+    })
+    setSignals(s.signals || [])
+    setEditingId(s.id)
+    setShowForm(true)
+    setSelected(null)
+    window.scrollTo({ top: 0, behavior: "smooth" })
+  }
+
+  const handleNewForm = () => {
+    setForm({ nickname: "", birthDate: "", birthTime: "", myBirthDate: "", myBirthTime: "", duration: "", howWeMet: "", myOpinion: "", lastMessage: "", persona: "" })
+    setSignals([])
+    setEditingId(null)
+    setShowForm(!showForm)
   }
 
   const handleAnalyze = async (id: string) => {
@@ -125,7 +154,7 @@ export default function SsumPage() {
       </div>
 
       {/* 등록 버튼 */}
-      <button onClick={() => setShowForm(!showForm)}
+      <button onClick={handleNewForm}
         className="w-full py-3 bg-cemetery-card border border-dashed border-cemetery-border hover:border-cemetery-accent rounded-2xl text-sm text-cemetery-ghost hover:text-cemetery-heading transition-colors">
         {showForm ? "✕ 닫기" : "💔 썸붕 기록하기"}
       </button>
@@ -134,7 +163,9 @@ export default function SsumPage() {
       {showForm && (
         <div className="bg-cemetery-card border border-cemetery-border rounded-2xl p-5 space-y-4 animate-fade-in"
           onKeyDown={(e) => { if (e.key === "Enter") e.preventDefault() }}>
-          <h2 className="text-sm font-semibold text-cemetery-heading">썸붕 상대 정보</h2>
+          <h2 className="text-sm font-semibold text-cemetery-heading">
+            {editingId ? "✏️ 썸붕 기록 수정" : "썸붕 상대 정보"}
+          </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
@@ -231,7 +262,7 @@ export default function SsumPage() {
 
           <button type="button" onClick={handleSave} disabled={saving || !form.nickname}
             className="w-full py-3 bg-cemetery-accent hover:bg-cemetery-accent-dim disabled:opacity-40 rounded-xl font-semibold text-sm transition-colors cute-press">
-            {saving ? "저장 중..." : "💔 썸붕 기록 저장"}
+            {saving ? "저장 중..." : editingId ? "✏️ 수정 저장" : "💔 썸붕 기록 저장"}
           </button>
         </div>
       )}
@@ -290,11 +321,39 @@ export default function SsumPage() {
                     </div>
                   )}
 
+                  {/* 편집 버튼 */}
+                  <button onClick={() => handleEdit(s)}
+                    className="w-full py-2 bg-cemetery-surface border border-cemetery-border hover:border-cemetery-accent rounded-xl text-xs text-cemetery-ghost transition-colors cute-press">
+                    ✏️ 내용 수정하기
+                  </button>
+
                   {/* 팩폭 레벨 + AI 분석 */}
                   {s.aiAnalysis ? (
-                    <div className="bg-cemetery-surface rounded-xl p-4">
-                      <p className="text-[10px] text-cemetery-accent mb-2">🔍 AI + 연애고수 분석</p>
-                      <p className="text-sm text-cemetery-text whitespace-pre-wrap leading-relaxed">{s.aiAnalysis}</p>
+                    <div className="space-y-3">
+                      <div className="bg-cemetery-surface rounded-xl p-4">
+                        <p className="text-[10px] text-cemetery-accent mb-2">🔍 AI + 연애고수 분석</p>
+                        <p className="text-sm text-cemetery-text whitespace-pre-wrap leading-relaxed">{s.aiAnalysis}</p>
+                      </div>
+                      {/* 재분석 */}
+                      <div className="bg-cemetery-surface rounded-xl p-3 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] text-cemetery-ghost/50">💣 팩폭 강도 바꿔서 재분석</span>
+                          <span className="text-xs font-bold" style={{
+                            color: factLevel <= 2 ? "#7eecd0" : factLevel === 3 ? "#e0e0f0" : factLevel === 4 ? "#ffaa33" : "#ff4466"
+                          }}>
+                            {["", "🧸", "😊", "⚖️", "🔥", "💀"][factLevel]}
+                          </span>
+                        </div>
+                        <input type="range" min={1} max={5} value={factLevel}
+                          onChange={(e) => setFactLevel(parseInt(e.target.value))}
+                          className="w-full h-2 rounded-full appearance-none cursor-pointer"
+                          style={{ background: "linear-gradient(to right, #7eecd0 0%, #e0e0f0 50%, #ff4466 100%)" }} />
+                        <button onClick={() => { setSelected((prev) => prev ? { ...prev, aiAnalysis: undefined } : prev); handleAnalyze(s.id) }}
+                          disabled={analyzing}
+                          className="w-full py-2 bg-cemetery-accent/20 hover:bg-cemetery-accent/30 disabled:opacity-40 rounded-lg text-xs text-cemetery-accent transition-colors cute-press">
+                          {analyzing ? "재분석 중..." : "🔄 재분석"}
+                        </button>
+                      </div>
                     </div>
                   ) : (
                     <div className="space-y-3">
