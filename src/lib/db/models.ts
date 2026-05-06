@@ -131,6 +131,27 @@ const GraveCommentSchema = new Schema({
   content: { type: String, required: true, maxlength: 500 },
 }, { timestamps: true })
 
+// 썸붕 (썸이 깨진 기록)
+const SsumBungSchema = new Schema({
+  userId: { type: String, required: true, index: true },
+  nickname: { type: String, required: true },
+  photo: String,
+  birthDate: String,
+  birthTime: String,
+  myBirthDate: String,
+  myBirthTime: String,
+  duration: String, // 썸 기간 (예: "2개월")
+  howWeMet: String, // 만남 경위
+  myOpinion: { type: String, maxlength: 2000 }, // 내가 생각하는 썸붕 이유
+  signals: [String], // 썸붕 징후들
+  lastMessage: String, // 마지막 연락 내용
+  persona: String, // 상대 성격/MBTI
+  manseryeok: Schema.Types.Mixed,
+  myManseryeok: Schema.Types.Mixed,
+  compatibility: Schema.Types.Mixed,
+  aiAnalysis: String, // AI 분석 결과
+}, { timestamps: true })
+
 export const Grave = mongoose.models.Grave || mongoose.model<IGrave>("Grave", GraveSchema)
 export const UserData = mongoose.models.UserData || mongoose.model<IUserData>("UserData", UserDataSchema)
 export const Crush = mongoose.models.Crush || mongoose.model<ICrush>("Crush", CrushSchema)
@@ -138,3 +159,4 @@ export const AnalysisRecord = mongoose.models.AnalysisRecord || mongoose.model<I
 export const ChatHistory = mongoose.models.ChatHistory || mongoose.model<IChatHistory>("ChatHistory", ChatHistorySchema)
 export const SoulPartner = mongoose.models.SoulPartner || mongoose.model("SoulPartner", SoulPartnerSchema)
 export const GraveComment = mongoose.models.GraveComment || mongoose.model("GraveComment", GraveCommentSchema)
+export const SsumBung = mongoose.models.SsumBung || mongoose.model("SsumBung", SsumBungSchema)
