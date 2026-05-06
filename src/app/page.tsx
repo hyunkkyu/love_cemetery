@@ -6,6 +6,7 @@ import type { Grave } from "@/types"
 import { GraveCard } from "@/components/GraveCard"
 import { dbGraves } from "@/lib/api-client"
 import { PixelArt, PIXEL_ARTS } from "@/components/PixelArt"
+import { WeeklyReport } from "@/components/WeeklyReport"
 
 export default function HomePage() {
   const { data: session } = useSession()
@@ -132,6 +133,9 @@ export default function HomePage() {
           </p>
         </section>
       )}
+
+      {/* 주간 리포트 */}
+      <WeeklyReport />
 
       {/* 기능 안내 */}
       <section className="grid grid-cols-1 md:grid-cols-3 gap-6 py-8">

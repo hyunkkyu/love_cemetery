@@ -58,6 +58,9 @@ const UserDataSchema = new Schema<IUserData>({
   coins: { type: Number, default: 500 },
   ownedItems: { type: [{ itemId: String, purchasedAt: String, equippedOn: String }], default: [] },
   itemPositions: { type: Schema.Types.Mixed, default: {} },
+  inviteCode: { type: String, unique: true, sparse: true },
+  invitedBy: String,
+  inviteCount: { type: Number, default: 0 },
 }, { timestamps: true })
 
 // 썸 (현재 만나는 사람)

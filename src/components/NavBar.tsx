@@ -15,6 +15,7 @@ const NAV_LINKS = [
   { href: "/love", label: "💘 살랑살랑", pink: true },
   { href: "/counsel", label: "🧙 상담" },
   { href: "/shop", label: "🛒 상점" },
+  { href: "/invite", label: "🎁 초대" },
   { href: "/notice", label: "📢 공지" },
 ]
 

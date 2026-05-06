@@ -9,6 +9,7 @@ import { ChatStats } from "@/components/ChatStats"
 import { ItemEquipPanel } from "@/components/ItemEquipPanel"
 import { dbGraveComment } from "@/lib/partner-client"
 import { DraggableItems } from "@/components/DraggableItems"
+import { ShareCard } from "@/components/ShareCard"
 import { GraveForm } from "@/components/GraveForm"
 
 export default function GraveDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -211,6 +212,15 @@ export default function GraveDetailPage({ params }: { params: Promise<{ id: stri
               </ul>
             </div>
           )}
+          {/* 공유 */}
+          <ShareCard
+            score={grave.compatibility.score}
+            personA={session?.user?.name || "나"}
+            personB={grave.nickname}
+            elementHarmony={grave.compatibility.elementHarmony || ""}
+            strengths={grave.compatibility.strengths ?? []}
+            type="grave"
+          />
         </section>
       )}
 

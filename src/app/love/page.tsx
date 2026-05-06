@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation"
 import type { Grave, GraveGrade } from "@/types"
 import { GRAVE_GRADES } from "@/types"
 import { dbGraves, dbCrushes, dbAnalysis } from "@/lib/api-client"
+import { ShareCard } from "@/components/ShareCard"
 
 interface CrushData { id: string; nickname: string; birthDate: string; birthTime: string; persona: string; chatStyle: string }
 interface RecordData { id: string; crushName: string; comparedWith?: string; score: number; aiAdvice: string; createdAt: string }
@@ -399,6 +400,16 @@ export default function LovePage() {
                 {result.compatibility.elementHarmony}
               </p>
             </div>
+
+            {/* 공유 */}
+            <ShareCard
+              score={result.compatibility.score}
+              personA={session?.user?.name || "나"}
+              personB={person.nickname}
+              elementHarmony={result.compatibility.elementHarmony}
+              strengths={result.compatibility.strengths}
+              type="love"
+            />
 
             {/* 강점/약점 */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

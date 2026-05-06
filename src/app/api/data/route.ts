@@ -199,6 +199,48 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ data: true })
       }
 
+      // === 초대 코드 ===
+      case "invite.getCode": {
+        let user = await UserData.findOne({ userId })
+        if (!user) {
+          user = await UserData.create({ userId })
+        }
+        if (!user.inviteCode) {
+          // 6자리 코드 생성
+          const code = userId.slice(-4).toUpperCase() + Math.random().toString(36).slice(2, 5).toUpperCase()
+          user.inviteCode = code
+          await user.save()
+        }
+        return NextResponse.json({
+          data: {
+            inviteCode: user.inviteCode,
+            inviteCount: user.inviteCount || 0,
+          },
+        })
+      }
+
+      case "invite.apply": {
+        const code = String(payload.code || "").trim().toUpperCase()
+        if (!code) return NextResponse.json({ error: "코드를 입력해주세요" }, { status: 400 })
+
+        // 내 계정 확인
+        const myUser = await UserData.findOne({ userId })
+        if (myUser?.invitedBy) {
+          return NextResponse.json({ error: "이미 초대 코드를 사용했습니다" }, { status: 400 })
+        }
+
+        // 초대자 찾기
+        const inviter = await UserData.findOne({ inviteCode: code })
+        if (!inviter) return NextResponse.json({ error: "유효하지 않은 초대 코드입니다" }, { status: 400 })
+        if (inviter.userId === userId) return NextResponse.json({ error: "본인 코드는 사용할 수 없습니다" }, { status: 400 })
+
+        // 양쪽 코인 지급
+        await UserData.findOneAndUpdate({ userId }, { $set: { invitedBy: code }, $inc: { coins: 200 } }, { upsert: true })
+        await UserData.findOneAndUpdate({ inviteCode: code }, { $inc: { coins: 200, inviteCount: 1 } })
+
+        return NextResponse.json({ data: { reward: 200 } })
+      }
+
       default:
         return NextResponse.json({ error: `Unknown action: ${action}` }, { status: 400 })
     }
