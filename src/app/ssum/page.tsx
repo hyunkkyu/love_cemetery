@@ -14,12 +14,7 @@ interface SsumRecord {
   aiAnalysis?: string; createdAt: string
 }
 
-const SIGNAL_OPTIONS = [
-  "답장이 점점 느려짐", "만남 제안을 계속 거절", "대화가 사무적으로 변함",
-  "이모티콘/리액션이 줄어듦", "읽씹이 늘어남", "다른 사람 얘기를 자주 함",
-  "SNS에서 반응이 사라짐", "약속을 잘 안 잡으려 함", "연락을 내가만 먼저 함",
-  "갑자기 바빠졌다고 함", "톤이 차가워짐", "만나도 폰만 봄",
-]
+// 삭제: 기존 고정 선택지 → 주관식으로 변경
 
 export default function SsumPage() {
   const { data: session, status } = useSession()
@@ -37,6 +32,7 @@ export default function SsumPage() {
     duration: "", howWeMet: "", myOpinion: "", lastMessage: "", persona: "",
   })
   const [signals, setSignals] = useState<string[]>([])
+  const [signalInput, setSignalInput] = useState("")
   const [saving, setSaving] = useState(false)
 
   const hourOptions = [
@@ -58,8 +54,15 @@ export default function SsumPage() {
 
   const update = (field: string, value: string) => setForm((p) => ({ ...p, [field]: value }))
 
-  const toggleSignal = (s: string) => {
-    setSignals((prev) => prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s])
+  const addSignal = () => {
+    const text = signalInput.trim()
+    if (!text || signals.includes(text)) return
+    setSignals((prev) => [...prev, text])
+    setSignalInput("")
+  }
+
+  const removeSignal = (s: string) => {
+    setSignals((prev) => prev.filter((x) => x !== s))
   }
 
   const handleSave = async () => {
@@ -185,18 +188,30 @@ export default function SsumPage() {
               placeholder="예: 소개팅, 앱, 학교, 직장" className="w-full px-3 py-2.5 bg-cemetery-surface border border-cemetery-border rounded-lg text-cemetery-text placeholder-cemetery-ghost/30 text-sm focus:border-cemetery-accent focus:outline-none" />
           </div>
 
-          {/* 썸붕 징후 선택 */}
+          {/* 썸붕 징후 입력 */}
           <div>
-            <label className="block text-xs text-cemetery-ghost/50 mb-2">💔 썸붕 징후 (해당하는 것 모두 선택)</label>
-            <div className="flex flex-wrap gap-2">
-              {SIGNAL_OPTIONS.map((s) => (
-                <button key={s} type="button" onClick={() => toggleSignal(s)}
-                  className={"px-3 py-1.5 rounded-full text-xs transition-all " +
-                    (signals.includes(s) ? "bg-red-500/20 border border-red-500/40 text-red-300" : "bg-cemetery-surface border border-cemetery-border text-cemetery-ghost hover:border-cemetery-ghost/40")}>
-                  {s}
-                </button>
-              ))}
+            <label className="block text-xs text-cemetery-ghost/50 mb-2">💔 썸붕 징후 (자유롭게 입력)</label>
+            <div className="flex gap-2 mb-2">
+              <input type="text" value={signalInput}
+                onChange={(e) => setSignalInput(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addSignal() } }}
+                placeholder="예: 답장이 느려짐, 거절 의사 표현 등"
+                className="flex-1 px-3 py-2 bg-cemetery-surface border border-cemetery-border rounded-lg text-cemetery-text placeholder-cemetery-ghost/30 text-sm focus:border-cemetery-accent focus:outline-none" />
+              <button type="button" onClick={addSignal} disabled={!signalInput.trim()}
+                className="px-3 py-2 bg-cemetery-accent hover:bg-cemetery-accent-dim disabled:opacity-40 rounded-lg text-sm transition-colors cute-press">
+                추가
+              </button>
             </div>
+            {signals.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {signals.map((s) => (
+                  <span key={s} className="inline-flex items-center gap-1 px-3 py-1.5 bg-red-500/15 border border-red-500/30 text-red-300 rounded-full text-xs">
+                    {s}
+                    <button type="button" onClick={() => removeSignal(s)} className="hover:text-red-100 ml-0.5">✕</button>
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
 
           <div>
