@@ -7,6 +7,24 @@ import { dbSsum } from "@/lib/ssum-client"
 import { calculateManseryeok, calculateCompatibility } from "@/lib/manseryeok"
 import { DateInput } from "@/components/DateInput"
 
+const SSUM_QUOTES = [
+  "좋아하는 감정은 틀린 게 아니다. 타이밍이 안 맞았을 뿐.",
+  "거절은 당신의 가치와 무관하다. 그냥 퍼즐 조각이 안 맞는 거다.",
+  "썸이 안 됐다고 실패가 아니다. 안 맞는 사람을 빨리 알게 된 거다.",
+  "상대가 날 안 좋아하는 건 내 잘못이 아니다. 취향의 문제다.",
+  "집착은 사랑이 아니다. 놓아줄 줄 아는 게 진짜 사랑이다.",
+  "한 사람에게 거절당한 건 70억 중 1명이 아닌 것일 뿐.",
+  "감정을 숨기느라 에너지를 쓰지 마라. 표현했는데 안 되면 그게 답이다.",
+  "매력은 외모가 아니라 자신감에서 나온다.",
+  "너무 좋아하면 약점이 된다. 적당한 거리가 매력이다.",
+  "안 되는 썸에 매달리는 시간에 나를 가꾸면 더 좋은 사람이 온다.",
+  "상대의 행동이 답이다. 말은 거짓말을 해도 행동은 못 한다.",
+  "밀당은 기술이 아니라, 진심이 없다는 증거다.",
+  "좋아하는 사람에게는 시간을 만든다. 바쁘다는 건 핑계다.",
+  "이별의 아픔은 새 만남의 설렘으로 치유된다.",
+  "혼자 있는 게 잘못된 사람과 있는 것보다 백배 낫다.",
+]
+
 interface SsumRecord {
   id: string; nickname: string; photo?: string; duration: string; howWeMet: string
   myOpinion: string; signals: string[]; lastMessage: string; persona: string
@@ -35,6 +53,7 @@ export default function SsumPage() {
   const [signals, setSignals] = useState<string[]>([])
   const [signalInput, setSignalInput] = useState("")
   const [factLevel, setFactLevel] = useState(3)
+  const [quoteIdx, setQuoteIdx] = useState(0)
   const [saving, setSaving] = useState(false)
 
   const hourOptions = [
@@ -49,6 +68,12 @@ export default function SsumPage() {
     if (status === "unauthenticated") router.push("/login")
     if (userId) reload()
   }, [userId, status, router])
+
+  useEffect(() => {
+    if (!analyzing) return
+    const interval = setInterval(() => setQuoteIdx((p) => (p + 1) % SSUM_QUOTES.length), 3500)
+    return () => clearInterval(interval)
+  }, [analyzing])
 
   const reload = async () => {
     try { const res = await dbSsum.list(); setList(res.data || []) } catch { /* */ }
@@ -349,11 +374,23 @@ export default function SsumPage() {
                           onChange={(e) => setFactLevel(parseInt(e.target.value))}
                           className="w-full h-2 rounded-full appearance-none cursor-pointer"
                           style={{ background: "linear-gradient(to right, #7eecd0 0%, #e0e0f0 50%, #ff4466 100%)" }} />
-                        <button onClick={() => { setSelected((prev) => prev ? { ...prev, aiAnalysis: undefined } : prev); handleAnalyze(s.id) }}
-                          disabled={analyzing}
-                          className="w-full py-2 bg-cemetery-accent/20 hover:bg-cemetery-accent/30 disabled:opacity-40 rounded-lg text-xs text-cemetery-accent transition-colors cute-press">
-                          {analyzing ? "재분석 중..." : "🔄 재분석"}
-                        </button>
+                        {analyzing ? (
+                          <div className="text-center py-3 space-y-2">
+                            <div className="flex justify-center gap-1.5">
+                              <span className="w-2 h-2 bg-cemetery-accent rounded-full animate-bounce" />
+                              <span className="w-2 h-2 bg-cemetery-accent rounded-full animate-bounce" style={{ animationDelay: "0.15s" }} />
+                              <span className="w-2 h-2 bg-cemetery-accent rounded-full animate-bounce" style={{ animationDelay: "0.3s" }} />
+                            </div>
+                            <p key={quoteIdx} className="text-xs text-cemetery-heading/70 italic animate-fade-in">
+                              &ldquo;{SSUM_QUOTES[quoteIdx]}&rdquo;
+                            </p>
+                          </div>
+                        ) : (
+                          <button onClick={() => { setSelected((prev) => prev ? { ...prev, aiAnalysis: undefined } : prev); handleAnalyze(s.id) }}
+                            className="w-full py-2 bg-cemetery-accent/20 hover:bg-cemetery-accent/30 rounded-lg text-xs text-cemetery-accent transition-colors cute-press">
+                            🔄 재분석
+                          </button>
+                        )}
                       </div>
                     </div>
                   ) : (
@@ -381,10 +418,24 @@ export default function SsumPage() {
                             : "친구가 술자리에서 하는 수준의 팩폭"}
                         </p>
                       </div>
-                      <button onClick={() => handleAnalyze(s.id)} disabled={analyzing}
-                        className="w-full py-3 bg-cemetery-accent hover:bg-cemetery-accent-dim disabled:opacity-40 rounded-xl text-sm font-semibold transition-colors cute-press">
-                        {analyzing ? "사주 + 연애고수 의견 수집 중..." : "🔍 종합 분석 요청 (사주 + 현실 조언)"}
-                      </button>
+                      {analyzing ? (
+                        <div className="text-center py-4 space-y-3">
+                          <div className="flex justify-center gap-2">
+                            <span className="w-2.5 h-2.5 bg-cemetery-accent rounded-full animate-bounce" />
+                            <span className="w-2.5 h-2.5 bg-cemetery-accent rounded-full animate-bounce" style={{ animationDelay: "0.15s" }} />
+                            <span className="w-2.5 h-2.5 bg-cemetery-accent rounded-full animate-bounce" style={{ animationDelay: "0.3s" }} />
+                          </div>
+                          <p className="text-xs text-cemetery-ghost/40">사주 + 연애고수 의견 수집 중...</p>
+                          <p key={quoteIdx} className="text-sm text-cemetery-heading/80 italic font-gothic leading-relaxed max-w-xs mx-auto animate-fade-in">
+                            &ldquo;{SSUM_QUOTES[quoteIdx]}&rdquo;
+                          </p>
+                        </div>
+                      ) : (
+                        <button onClick={() => handleAnalyze(s.id)}
+                          className="w-full py-3 bg-cemetery-accent hover:bg-cemetery-accent-dim rounded-xl text-sm font-semibold transition-colors cute-press">
+                          🔍 종합 분석 요청 (사주 + 현실 조언)
+                        </button>
+                      )}
                     </div>
                   )}
 
