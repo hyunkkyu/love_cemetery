@@ -26,12 +26,12 @@ export default function MatchPage() {
 
   const hourOptions = [
     { value: "", label: "모름" },
-    { value: "0", label: "자시" }, { value: "2", label: "축시" },
-    { value: "4", label: "인시" }, { value: "6", label: "묘시" },
-    { value: "8", label: "진시" }, { value: "10", label: "사시" },
-    { value: "12", label: "오시" }, { value: "14", label: "미시" },
-    { value: "16", label: "신시" }, { value: "18", label: "유시" },
-    { value: "20", label: "술시" }, { value: "22", label: "해시" },
+    { value: "0", label: "자시 (23:30~01:30)" }, { value: "2", label: "축시 (01:30~03:30)" },
+    { value: "4", label: "인시 (03:30~05:30)" }, { value: "6", label: "묘시 (05:30~07:30)" },
+    { value: "8", label: "진시 (07:30~09:30)" }, { value: "10", label: "사시 (09:30~11:30)" },
+    { value: "12", label: "오시 (11:30~13:30)" }, { value: "14", label: "미시 (13:30~15:30)" },
+    { value: "16", label: "신시 (15:30~17:30)" }, { value: "18", label: "유시 (17:30~19:30)" },
+    { value: "20", label: "술시 (19:30~21:30)" }, { value: "22", label: "해시 (21:30~23:30)" },
   ]
 
   useEffect(() => {
