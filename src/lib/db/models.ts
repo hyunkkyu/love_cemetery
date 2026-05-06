@@ -3,10 +3,14 @@ import mongoose, { Schema, type Document } from "mongoose"
 // 유저 계정
 const UserSchema = new Schema({
   nickname: { type: String, required: true, unique: true, minlength: 2, maxlength: 12 },
+  email: { type: String, required: true, index: true },
   hashedPassword: { type: String, required: true },
   userId: { type: String, required: true, unique: true },
-  securityQuestion: { type: String, required: true },
-  securityAnswer: { type: String, required: true },
+  resetToken: String,
+  resetTokenExpiry: Date,
+  // 하위 호환용 (기존)
+  securityQuestion: String,
+  securityAnswer: String,
 }, { timestamps: true })
 
 export const User = mongoose.models.User || mongoose.model("User", UserSchema)

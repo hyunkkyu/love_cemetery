@@ -4,27 +4,16 @@ import { useState, useEffect } from "react"
 import { signIn } from "next-auth/react"
 import { useRouter } from "next/navigation"
 
-const SECURITY_QUESTIONS = [
-  "첫사랑의 이름은?",
-  "가장 좋아하는 노래 제목은?",
-  "어릴 때 살던 동네 이름은?",
-  "반려동물 이름은?",
-  "가장 기억에 남는 여행지는?",
-  "좋아하는 음식은?",
-]
-
 export default function RegisterPage() {
   const router = useRouter()
   const [nickname, setNickname] = useState("")
   const [nicknameOk, setNicknameOk] = useState<boolean | null>(null)
+  const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [passwordConfirm, setPasswordConfirm] = useState("")
-  const [securityQuestion, setSecurityQuestion] = useState(SECURITY_QUESTIONS[0])
-  const [securityAnswer, setSecurityAnswer] = useState("")
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
 
-  // 닉네임 중복 체크 (디바운스)
   useEffect(() => {
     if (nickname.length < 2) { setNicknameOk(null); return }
     const timer = setTimeout(async () => {
@@ -43,14 +32,13 @@ export default function RegisterPage() {
 
   const passwordValid = password.length >= 8 && /[a-zA-Z]/.test(password) && /[0-9]/.test(password)
   const passwordMatch = password === passwordConfirm && passwordConfirm.length > 0
+  const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
 
   const handleSubmit = async () => {
     setError("")
-    if (!nickname || !password || !securityAnswer) {
-      setError("모든 항목을 입력해주세요")
-      return
-    }
+    if (!nickname || !email || !password) { setError("모든 항목을 입력해주세요"); return }
     if (!nicknameOk) { setError("사용할 수 없는 닉네임입니다"); return }
+    if (!emailValid) { setError("올바른 이메일을 입력해주세요"); return }
     if (!passwordValid) { setError("비밀번호: 8자 이상, 영문+숫자 포함"); return }
     if (!passwordMatch) { setError("비밀번호가 일치하지 않습니다"); return }
 
@@ -59,19 +47,14 @@ export default function RegisterPage() {
       const res = await fetch("/api/account", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "register", nickname, password, securityQuestion, securityAnswer }),
+        body: JSON.stringify({ action: "register", nickname, email, password }),
       })
       const data = await res.json()
       if (data.error) { setError(data.error); setLoading(false); return }
 
-      // 자동 로그인
       const result = await signIn("credentials", { nickname, password, redirect: false })
-      if (result?.ok) {
-        router.push("/")
-        router.refresh()
-      } else {
-        router.push("/login")
-      }
+      if (result?.ok) { router.push("/"); router.refresh() }
+      else router.push("/login")
     } catch {
       setError("회원가입 중 오류가 발생했습니다")
     }
@@ -88,9 +71,8 @@ export default function RegisterPage() {
         </div>
 
         <div className="space-y-4" onKeyDown={(e) => { if (e.key === "Enter") e.preventDefault() }}>
-          {/* 닉네임 */}
           <div>
-            <label className="block text-xs text-cemetery-ghost/50 mb-1">👻 영혼의 이름 (2~12자, 한글/영문/숫자)</label>
+            <label className="block text-xs text-cemetery-ghost/50 mb-1">👻 영혼의 이름 (2~12자)</label>
             <input type="text" value={nickname} onChange={(e) => setNickname(e.target.value)}
               placeholder="이 세계에서 불릴 이름" maxLength={12}
               className="w-full px-4 py-3 bg-cemetery-surface border border-cemetery-border rounded-xl text-cemetery-text placeholder-cemetery-ghost/30 focus:border-cemetery-accent focus:outline-none" />
@@ -101,7 +83,18 @@ export default function RegisterPage() {
             )}
           </div>
 
-          {/* 비밀번호 */}
+          <div>
+            <label className="block text-xs text-cemetery-ghost/50 mb-1">📧 이메일 (비밀번호 찾기에 사용)</label>
+            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
+              placeholder="your@email.com" inputMode="email"
+              className="w-full px-4 py-3 bg-cemetery-surface border border-cemetery-border rounded-xl text-cemetery-text placeholder-cemetery-ghost/30 focus:border-cemetery-accent focus:outline-none" />
+            {email.length > 0 && (
+              <p className={"text-[10px] mt-1 " + (emailValid ? "text-green-400" : "text-red-400")}>
+                {emailValid ? "✓ 유효한 이메일" : "✕ 이메일 형식이 아닙니다"}
+              </p>
+            )}
+          </div>
+
           <div>
             <label className="block text-xs text-cemetery-ghost/50 mb-1">🔮 입장 주문 (8자 이상, 영문+숫자)</label>
             <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
@@ -110,7 +103,7 @@ export default function RegisterPage() {
             {password.length > 0 && (
               <div className="flex gap-2 mt-1">
                 <span className={"text-[10px] " + (password.length >= 8 ? "text-green-400" : "text-red-400")}>
-                  {password.length >= 8 ? "✓" : "✕"} 8자 이상
+                  {password.length >= 8 ? "✓" : "✕"} 8자+
                 </span>
                 <span className={"text-[10px] " + (/[a-zA-Z]/.test(password) ? "text-green-400" : "text-red-400")}>
                   {/[a-zA-Z]/.test(password) ? "✓" : "✕"} 영문
@@ -122,7 +115,6 @@ export default function RegisterPage() {
             )}
           </div>
 
-          {/* 비밀번호 확인 */}
           <div>
             <label className="block text-xs text-cemetery-ghost/50 mb-1">🔮 주문 확인</label>
             <input type="password" value={passwordConfirm} onChange={(e) => setPasswordConfirm(e.target.value)}
@@ -135,25 +127,7 @@ export default function RegisterPage() {
             )}
           </div>
 
-          {/* 보안 질문 */}
-          <div>
-            <label className="block text-xs text-cemetery-ghost/50 mb-1">🕯️ 영혼 확인 질문 (주문 분실 시 사용)</label>
-            <select value={securityQuestion} onChange={(e) => setSecurityQuestion(e.target.value)}
-              className="w-full px-4 py-3 bg-cemetery-surface border border-cemetery-border rounded-xl text-cemetery-text focus:border-cemetery-accent focus:outline-none text-sm">
-              {SECURITY_QUESTIONS.map((q) => <option key={q} value={q}>{q}</option>)}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-xs text-cemetery-ghost/50 mb-1">🕯️ 답변</label>
-            <input type="text" value={securityAnswer} onChange={(e) => setSecurityAnswer(e.target.value)}
-              placeholder="유령만 아는 답"
-              className="w-full px-4 py-3 bg-cemetery-surface border border-cemetery-border rounded-xl text-cemetery-text placeholder-cemetery-ghost/30 focus:border-cemetery-accent focus:outline-none" />
-          </div>
-
-          {error && (
-            <p className="text-xs text-red-400 bg-red-900/20 rounded-lg p-2">⚠️ {error}</p>
-          )}
+          {error && <p className="text-xs text-red-400 bg-red-900/20 rounded-lg p-2">⚠️ {error}</p>}
 
           <button type="button" onClick={handleSubmit} disabled={loading}
             className="w-full py-3 bg-cemetery-accent hover:bg-cemetery-accent-dim disabled:opacity-50 rounded-xl font-semibold transition-colors cute-press text-lg">
