@@ -171,6 +171,15 @@ export default function NoticePage() {
         <p className="text-xs text-cemetery-ghost/40">명예의전당 기능 업데이트 및 변경 이력</p>
       </div>
 
+      {/* 튜토리얼 다시 보기 */}
+      <button
+        onClick={() => { localStorage.removeItem("tutorial-done"); window.dispatchEvent(new Event("show-tutorial")) }}
+        className="w-full py-3 bg-cemetery-card border border-dashed border-cemetery-accent/30 hover:border-cemetery-accent
+          rounded-2xl text-sm text-cemetery-accent transition-colors cute-press"
+      >
+        📖 튜토리얼 다시 보기
+      </button>
+
       {/* 기능 가이드 */}
       <div className="bg-cemetery-card border border-cemetery-border rounded-2xl p-5 space-y-3">
         <h2 className="text-sm font-semibold text-cemetery-heading">🗺️ 기능 가이드</h2>
@@ -182,6 +191,7 @@ export default function NoticePage() {
           <GuideItem href="/partner" icon="💀" title="영혼의동반자" desc="서로의 묘비 열람 + 조언" />
           <GuideItem href="/community" icon="👻" title="커뮤니티" desc="연애토크/사주해석/고민상담" />
           <GuideItem href="/community/match" icon="💕" title="궁합 매칭" desc="사주 기반 유저 매칭" />
+          <GuideItem href="/ssum" icon="💔" title="썸붕 분석" desc="썸이 왜 깨졌는지 객관적 분석" />
           <GuideItem href="/counsel" icon="🧙" title="연애 상담" desc="AI 전문 상담사에게 맞춤 상담" />
           <GuideItem href="/shop" icon="🛒" title="상점" desc="픽셀아트 아이템 구매" />
           <GuideItem href="/stats" icon="📊" title="통계" desc="랭킹/MBTI/일주 통계" />
