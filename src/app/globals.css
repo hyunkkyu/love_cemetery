@@ -277,3 +277,48 @@ input[type="time"]::-webkit-calendar-picker-indicator {
   background: rgba(139, 123, 247, 0.3);
   color: white;
 }
+
+/* ===== 모바일 반응형 ===== */
+@media (max-width: 768px) {
+  body {
+    font-size: 14px;
+  }
+
+  /* 기본 여백 축소 */
+  .max-w-6xl {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  /* 그리드 1열로 */
+  .grid-cols-2, .md\:grid-cols-2, .md\:grid-cols-3, .lg\:grid-cols-3, .md\:grid-cols-4, .lg\:grid-cols-4 {
+    grid-template-columns: 1fr;
+  }
+
+  /* 묘비 카드 작게 */
+  .tombstone-hover:hover {
+    transform: translateY(-2px);
+  }
+
+  /* 채팅 말풍선 */
+  .max-w-\[280px\] {
+    max-width: 220px;
+  }
+
+  /* 사주 기둥 간격 */
+  .gap-4 {
+    gap: 8px;
+  }
+}
+
+/* 모바일 터치 최적화 */
+@media (hover: none) {
+  .tombstone-hover:hover {
+    transform: none;
+    box-shadow: none;
+  }
+
+  button, a {
+    -webkit-tap-highlight-color: transparent;
+  }
+}

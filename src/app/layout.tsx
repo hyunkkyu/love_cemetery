@@ -7,6 +7,15 @@ import { SessionGuard } from "@/components/SessionGuard"
 import { DailyFortune } from "@/components/DailyFortune"
 import { Tutorial } from "@/components/Tutorial"
 
+import type { Viewport } from "next"
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+}
+
 export const metadata: Metadata = {
   title: "명예의전당 | Hall of Fame",
   description: "지난 연애를 기리고, 만세력으로 분석하는 공간",
