@@ -253,9 +253,17 @@ function IncenseButtons({ graveId, graveOwnerId, onBurn }: { graveId: string; gr
         ))}
       </div>
       {burned && (
-        <p className="text-center text-xs text-orange-300 animate-fade-in">
-          🪔 향이 피어오르고 있어요...
-        </p>
+        <div className="relative text-center py-2 animate-fade-in">
+          {/* 연기 파티클 */}
+          <div className="flex justify-center gap-3">
+            <span className="smoke-rise text-lg" style={{ animationDelay: "0s" }}>💨</span>
+            <span className="smoke-rise text-xl" style={{ animationDelay: "0.3s" }}>💨</span>
+            <span className="smoke-rise text-lg" style={{ animationDelay: "0.6s" }}>💨</span>
+          </div>
+          <p className="text-xs text-orange-300 mt-1">
+            🪔 향이 피어오르고 있어요...
+          </p>
+        </div>
       )}
     </div>
   )
