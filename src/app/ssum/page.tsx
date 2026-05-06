@@ -33,6 +33,7 @@ export default function SsumPage() {
   })
   const [signals, setSignals] = useState<string[]>([])
   const [signalInput, setSignalInput] = useState("")
+  const [factLevel, setFactLevel] = useState(3)
   const [saving, setSaving] = useState(false)
 
   const hourOptions = [
@@ -97,7 +98,7 @@ export default function SsumPage() {
   const handleAnalyze = async (id: string) => {
     setAnalyzing(true)
     try {
-      const res = await dbSsum.analyze(id)
+      const res = await dbSsum.analyze(id, factLevel)
       setSelected((prev) => prev ? { ...prev, aiAnalysis: res.data } : prev)
       reload()
     } catch (err) {
@@ -289,17 +290,42 @@ export default function SsumPage() {
                     </div>
                   )}
 
-                  {/* AI 분석 */}
+                  {/* 팩폭 레벨 + AI 분석 */}
                   {s.aiAnalysis ? (
                     <div className="bg-cemetery-surface rounded-xl p-4">
-                      <p className="text-[10px] text-cemetery-accent mb-2">🔍 AI 객관적 분석</p>
+                      <p className="text-[10px] text-cemetery-accent mb-2">🔍 AI + 연애고수 분석</p>
                       <p className="text-sm text-cemetery-text whitespace-pre-wrap leading-relaxed">{s.aiAnalysis}</p>
                     </div>
                   ) : (
-                    <button onClick={() => handleAnalyze(s.id)} disabled={analyzing}
-                      className="w-full py-3 bg-cemetery-accent hover:bg-cemetery-accent-dim disabled:opacity-40 rounded-xl text-sm font-semibold transition-colors cute-press">
-                      {analyzing ? "분석 중..." : "🔍 AI에게 객관적 분석 요청"}
-                    </button>
+                    <div className="space-y-3">
+                      {/* 팩폭 레벨 슬라이더 */}
+                      <div className="bg-cemetery-surface rounded-xl p-4 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <label className="text-xs text-cemetery-ghost/50">💣 팩폭 강도</label>
+                          <span className="text-sm font-bold" style={{
+                            color: factLevel <= 2 ? "#7eecd0" : factLevel === 3 ? "#e0e0f0" : factLevel === 4 ? "#ffaa33" : "#ff4466"
+                          }}>
+                            {["", "🧸 순한맛", "😊 살짝", "⚖️ 균형", "🔥 직설", "💀 극강"][factLevel]}
+                          </span>
+                        </div>
+                        <input type="range" min={1} max={5} value={factLevel}
+                          onChange={(e) => setFactLevel(parseInt(e.target.value))}
+                          className="w-full h-2 rounded-full appearance-none cursor-pointer"
+                          style={{
+                            background: "linear-gradient(to right, #7eecd0 0%, #e0e0f0 50%, #ff4466 100%)",
+                          }} />
+                        <p className="text-[10px] text-cemetery-ghost/30 text-center">
+                          {factLevel <= 2 ? "위로 위주, 팩트는 완곡하게"
+                            : factLevel === 3 ? "공감 50% + 팩트 50%"
+                            : factLevel === 4 ? "꽤 직설적, 듣기 싫은 말도"
+                            : "친구가 술자리에서 하는 수준의 팩폭"}
+                        </p>
+                      </div>
+                      <button onClick={() => handleAnalyze(s.id)} disabled={analyzing}
+                        className="w-full py-3 bg-cemetery-accent hover:bg-cemetery-accent-dim disabled:opacity-40 rounded-xl text-sm font-semibold transition-colors cute-press">
+                        {analyzing ? "사주 + 연애고수 의견 수집 중..." : "🔍 종합 분석 요청 (사주 + 현실 조언)"}
+                      </button>
+                    </div>
                   )}
 
                   <button onClick={() => handleDelete(s.id)}

@@ -26,5 +26,5 @@ export const dbSsum = {
   get: (ssumId: string) => callSsum("ssum.get", { ssumId }),
   save: (ssum: Record<string, unknown>) => callSsum("ssum.save", { ssum }),
   delete: (ssumId: string) => callSsum("ssum.delete", { ssumId }),
-  analyze: (ssumId: string) => callSsum("ssum.analyze", { ssumId }),
+  analyze: (ssumId: string, factLevel?: number) => callSsum("ssum.analyze", { ssumId, factLevel }),
 }

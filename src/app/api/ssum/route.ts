@@ -61,6 +61,34 @@ export async function POST(request: NextRequest) {
         const doc = await SsumBung.findOne({ _id: body.ssumId, userId }).lean()
         if (!doc) return NextResponse.json({ error: "데이터를 찾을 수 없습니다" }, { status: 404 })
         const s = doc as Record<string, unknown>
+        const factLevel = Number(body.factLevel) || 3 // 1(순한맛)~5(극강 팩폭)
+
+        // 웹에서 연애 조언 검색
+        let webAdvice = ""
+        try {
+          const searchQuery = encodeURIComponent("연애 썸 거절당했을때 현실적 조언 " + (s.myOpinion || ""))
+          const searchRes = await fetch(
+            "https://www.googleapis.com/customsearch/v1?key=" + (process.env.GOOGLE_SEARCH_KEY || "") +
+            "&cx=" + (process.env.GOOGLE_SEARCH_CX || "") +
+            "&q=" + searchQuery + "&num=3&lr=lang_ko",
+            { signal: AbortSignal.timeout(5000) }
+          )
+          if (searchRes.ok) {
+            const searchData = await searchRes.json()
+            const items = searchData.items || []
+            webAdvice = items.map((item: { title: string; snippet: string }) =>
+              item.title + ": " + item.snippet
+            ).join("\n")
+          }
+        } catch { /* 검색 실패해도 계속 진행 */ }
+
+        const factToneMap: Record<number, string> = {
+          1: "매우 부드럽고 공감 위주. 위로를 먼저 하고, 조심스럽게 조언. 팩트는 완곡하게.",
+          2: "부드럽지만 필요한 말은 하는 스타일. '혹시 이런 건 아닐까?' 식으로 조심스럽게.",
+          3: "균형 잡힌 톤. 공감 50% + 팩트 50%. 현실적이지만 상처는 최소화.",
+          4: "꽤 직설적. '솔직히 말하면...' 으로 시작하는 팩트 폭격. 단, 인격 모욕은 아님.",
+          5: "극강 팩폭. 친한 친구가 술자리에서 하는 수준의 직설. '야 솔직히 말할게...' 수준. 듣기 싫은 진실도 거침없이. 다만 결국은 성장을 위한 조언으로 마무리.",
+        }
 
         const prompt = `"명예의전당" 앱의 "썸붕 분석" 요청입니다.
 
@@ -81,15 +109,29 @@ ${Array.isArray(s.signals) && s.signals.length > 0 ? (s.signals as string[]).joi
 [마지막 연락]
 ${s.lastMessage || "미입력"}
 
-다음 관점으로 분석해주세요:
+${webAdvice ? `[참고: 연애 전문가/커뮤니티 의견]\n${webAdvice}\n` : ""}
 
-1. **🔍 객관적 썸붕 원인 진단**: 본인이 말한 이유 vs 실제 원인이 다를 수 있음. 사주/궁합 데이터와 정황을 종합해서 객관적으로 분석
-2. **💡 본인이 놓친 신호**: 썸붕 징후에서 미리 알아챌 수 있었던 것들
-3. **🪞 자기 객관화**: 혹시 본인에게도 원인이 있었는지 솔직하게 (따뜻한 톤으로)
-4. **🔮 이 사람과 가능성**: 사주 궁합상 원래 안 맞는 건지, 타이밍 문제인지, 다시 시도해볼 만한지
-5. **💪 다음 썸을 위한 조언**: 같은 실수를 반복하지 않으려면 어떻게 해야 하는지
+## 팩폭 레벨: ${factLevel}/5
+${factToneMap[factLevel] || factToneMap[3]}
 
-공감하되 뼈때리는 직언도 섞어주세요. "~거든요" 같은 다정한 구어체로.`
+## 분석 형식 (두 파트로 나눠서)
+
+### 파트1: 🔮 사주/운명학 관점
+1. 객관적 썸붕 원인 진단 (사주/궁합 기반)
+2. 이 사람과의 가능성 판단
+
+### 파트2: 💣 연애 고수의 현실 조언
+팩폭 레벨 ${factLevel}/5에 맞춰서:
+- 사주 같은 거 빼고, 순수하게 연애 경험과 현실 관점에서 분석
+- "솔직히 상대 입장에서 보면..." 으로 상대 시점도 분석
+- 본인이 인정하기 싫지만 사실일 수 있는 원인들
+- 외모, 매력, 대화 스킬, 타이밍, 밀당 실수 등 현실적 요소
+- 실제 연애 커뮤니티에서 나올 법한 직설적 피드백
+${factLevel >= 4 ? "- 듣기 싫은 진실도 과감하게 말하기" : ""}
+${factLevel >= 5 ? "- '야 솔직히...' 수준으로 거침없이. 단, 마지막엔 응원으로 마무리" : ""}
+
+### 마지막: 💪 다음 썸 실전 전략
+구체적이고 실행 가능한 액션 플랜 3~5개`
 
         const analysis = await callLLM(prompt, "medium")
 
