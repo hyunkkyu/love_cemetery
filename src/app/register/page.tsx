@@ -82,17 +82,17 @@ export default function RegisterPage() {
     <div className="min-h-[70vh] flex items-center justify-center px-4">
       <div className="w-full max-w-sm space-y-6">
         <div className="text-center space-y-3">
-          <div className="text-5xl ghost-float inline-block">👻</div>
-          <h1 className="font-gothic text-2xl font-black text-cemetery-heading">회원가입</h1>
-          <p className="text-xs text-cemetery-ghost/50">명예의전당에 입주하세요</p>
+          <div className="text-5xl ghost-float inline-block">⚰️</div>
+          <h1 className="font-gothic text-2xl font-black text-cemetery-heading">묘지기 등록</h1>
+          <p className="text-xs text-cemetery-ghost/50">영혼의 이름과 주문을 등록하세요</p>
         </div>
 
         <div className="space-y-4" onKeyDown={(e) => { if (e.key === "Enter") e.preventDefault() }}>
           {/* 닉네임 */}
           <div>
-            <label className="block text-xs text-cemetery-ghost/50 mb-1">닉네임 * (2~12자, 한글/영문/숫자)</label>
+            <label className="block text-xs text-cemetery-ghost/50 mb-1">👻 영혼의 이름 (2~12자, 한글/영문/숫자)</label>
             <input type="text" value={nickname} onChange={(e) => setNickname(e.target.value)}
-              placeholder="묘지기 이름" maxLength={12}
+              placeholder="이 세계에서 불릴 이름" maxLength={12}
               className="w-full px-4 py-3 bg-cemetery-surface border border-cemetery-border rounded-xl text-cemetery-text placeholder-cemetery-ghost/30 focus:border-cemetery-accent focus:outline-none" />
             {nickname.length >= 2 && (
               <p className={"text-[10px] mt-1 " + (nicknameOk ? "text-green-400" : nicknameOk === false ? "text-red-400" : "text-cemetery-ghost/30")}>
@@ -103,9 +103,9 @@ export default function RegisterPage() {
 
           {/* 비밀번호 */}
           <div>
-            <label className="block text-xs text-cemetery-ghost/50 mb-1">비밀번호 * (8자 이상, 영문+숫자)</label>
+            <label className="block text-xs text-cemetery-ghost/50 mb-1">🔮 입장 주문 (8자 이상, 영문+숫자)</label>
             <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
-              placeholder="비밀번호"
+              placeholder="묘지 입장 주문"
               className="w-full px-4 py-3 bg-cemetery-surface border border-cemetery-border rounded-xl text-cemetery-text placeholder-cemetery-ghost/30 focus:border-cemetery-accent focus:outline-none" />
             {password.length > 0 && (
               <div className="flex gap-2 mt-1">
@@ -124,9 +124,9 @@ export default function RegisterPage() {
 
           {/* 비밀번호 확인 */}
           <div>
-            <label className="block text-xs text-cemetery-ghost/50 mb-1">비밀번호 확인 *</label>
+            <label className="block text-xs text-cemetery-ghost/50 mb-1">🔮 주문 확인</label>
             <input type="password" value={passwordConfirm} onChange={(e) => setPasswordConfirm(e.target.value)}
-              placeholder="비밀번호 재입력"
+              placeholder="주문 다시 입력"
               className="w-full px-4 py-3 bg-cemetery-surface border border-cemetery-border rounded-xl text-cemetery-text placeholder-cemetery-ghost/30 focus:border-cemetery-accent focus:outline-none" />
             {passwordConfirm.length > 0 && (
               <p className={"text-[10px] mt-1 " + (passwordMatch ? "text-green-400" : "text-red-400")}>
@@ -137,7 +137,7 @@ export default function RegisterPage() {
 
           {/* 보안 질문 */}
           <div>
-            <label className="block text-xs text-cemetery-ghost/50 mb-1">비밀번호 찾기용 질문 *</label>
+            <label className="block text-xs text-cemetery-ghost/50 mb-1">🕯️ 영혼 확인 질문 (주문 분실 시 사용)</label>
             <select value={securityQuestion} onChange={(e) => setSecurityQuestion(e.target.value)}
               className="w-full px-4 py-3 bg-cemetery-surface border border-cemetery-border rounded-xl text-cemetery-text focus:border-cemetery-accent focus:outline-none text-sm">
               {SECURITY_QUESTIONS.map((q) => <option key={q} value={q}>{q}</option>)}
@@ -145,9 +145,9 @@ export default function RegisterPage() {
           </div>
 
           <div>
-            <label className="block text-xs text-cemetery-ghost/50 mb-1">답변 *</label>
+            <label className="block text-xs text-cemetery-ghost/50 mb-1">🕯️ 답변</label>
             <input type="text" value={securityAnswer} onChange={(e) => setSecurityAnswer(e.target.value)}
-              placeholder="답변 입력 (비밀번호 찾기에 사용)"
+              placeholder="유령만 아는 답"
               className="w-full px-4 py-3 bg-cemetery-surface border border-cemetery-border rounded-xl text-cemetery-text placeholder-cemetery-ghost/30 focus:border-cemetery-accent focus:outline-none" />
           </div>
 
@@ -157,7 +157,7 @@ export default function RegisterPage() {
 
           <button type="button" onClick={handleSubmit} disabled={loading}
             className="w-full py-3 bg-cemetery-accent hover:bg-cemetery-accent-dim disabled:opacity-50 rounded-xl font-semibold transition-colors cute-press text-lg">
-            {loading ? "가입 중..." : "👻 가입하기"}
+            {loading ? "등록 중..." : "⚰️ 묘지기 등록"}
           </button>
 
           <p className="text-center text-xs text-cemetery-ghost/40">
