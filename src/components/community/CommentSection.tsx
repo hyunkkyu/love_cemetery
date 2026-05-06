@@ -66,10 +66,10 @@ export function CommentSection({ postId }: { postId: string }) {
                 <button
                   onClick={() => handleLike(c.id)}
                   className={`text-xs transition-colors ${
-                    c.likedBy?.includes(userId || "") ? "text-cemetery-accent" : "text-cemetery-ghost/30 hover:text-cemetery-ghost"
+                    c.likedBy?.includes(userId || "") ? "text-orange-300" : "text-cemetery-ghost/30 hover:text-cemetery-ghost"
                   }`}
                 >
-                  👻 {c.likes || 0}
+                  🪔 {c.likes || 0}
                 </button>
                 {c.userId === userId && (
                   <button

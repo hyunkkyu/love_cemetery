@@ -32,7 +32,7 @@ export function PostCard({ post }: { post: Post }) {
           <div className="flex items-center gap-4 mt-2 text-[10px] text-cemetery-ghost/40">
             <span>{post.nickname}</span>
             <span>{timeAgo}</span>
-            <span>👻 {post.likes}</span>
+            <span>🪔 {post.likes}</span>
             <span>👁️ {post.viewCount}</span>
           </div>
         </div>

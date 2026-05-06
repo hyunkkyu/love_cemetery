@@ -202,6 +202,40 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ data: true })
       }
 
+      // 향피우기 (묘비에 위로/공감)
+      case "incense.burn": {
+        const graveId = String(body.graveId || "")
+        const graveOwnerId = String(body.graveOwnerId || "")
+        const incenseType = String(body.incenseType || "comfort") // comfort, cheer, pray, love
+
+        // 동반자 관계이거나 본인 묘비
+        if (graveOwnerId !== userId) {
+          const relation = await SoulPartner.findOne({
+            $or: [
+              { fromUserId: userId, toUserId: graveOwnerId },
+              { fromUserId: graveOwnerId, toUserId: userId },
+            ],
+            status: "accepted",
+          })
+          if (!relation) return NextResponse.json({ error: "동반자만 향을 피울 수 있습니다" }, { status: 403 })
+        }
+
+        const INCENSE_TYPES: Record<string, string> = {
+          comfort: "🪔 위로의 향",
+          cheer: "🔥 응원의 향",
+          pray: "🕯️ 기도의 향",
+          love: "💜 사랑의 향",
+        }
+
+        await GraveComment.create({
+          graveId, graveOwnerId, userId,
+          nickname: userName,
+          content: (INCENSE_TYPES[incenseType] || "🪔 향") + "을 피웠습니다",
+        })
+
+        return NextResponse.json({ data: { type: incenseType, message: INCENSE_TYPES[incenseType] || "🪔 향" } })
+      }
+
       // 받은 신청 수
       case "partner.pendingCount": {
         const count = await SoulPartner.countDocuments({ toUserId: userId, status: "pending" })

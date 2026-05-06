@@ -91,17 +91,17 @@ export default function PostDetailPage({ params }: { params: Promise<{ postId: s
           {post.content}
         </div>
 
-        {/* 좋아요 */}
+        {/* 향피우기 */}
         <div className="flex items-center gap-4 pt-2 border-t border-cemetery-border">
           <button
             onClick={handleLike}
             className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm transition-all cute-press
               ${isLiked
-                ? "bg-cemetery-accent/20 text-cemetery-accent"
+                ? "bg-orange-500/20 text-orange-300"
                 : "bg-cemetery-surface text-cemetery-ghost/50 hover:text-cemetery-ghost"
               }`}
           >
-            👻 {isLiked ? "공감했어요" : "공감"} {post.likes}
+            🪔 {isLiked ? "향을 피웠어요" : "향 피우기"} {post.likes}
           </button>
         </div>
       </article>

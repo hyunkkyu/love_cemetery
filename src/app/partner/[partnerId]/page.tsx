@@ -2,7 +2,7 @@
 
 import { useState, useEffect, use } from "react"
 import { useSession } from "next-auth/react"
-import { dbPartner, dbGraveComment } from "@/lib/partner-client"
+import { dbPartner, dbGraveComment, dbIncense } from "@/lib/partner-client"
 import { GRAVE_GRADES } from "@/types"
 import type { Grave } from "@/types"
 
@@ -154,6 +154,11 @@ export default function PartnerGravesPage({ params }: { params: Promise<{ partne
             </div>
           )}
 
+          {/* 향피우기 */}
+          <IncenseButtons graveId={selectedGrave.id} graveOwnerId={partnerId} onBurn={() => {
+            dbGraveComment.list(selectedGrave.id).then((res) => setComments(res.data || []))
+          }} />
+
           {/* 코멘트 섹션 */}
           <div className="border-t border-cemetery-border pt-4 space-y-3">
             <h4 className="text-sm font-semibold text-cemetery-heading">💬 조언 코멘트 ({comments.length})</h4>
@@ -203,6 +208,54 @@ export default function PartnerGravesPage({ params }: { params: Promise<{ partne
             </div>
           </div>
         </div>
+      )}
+    </div>
+  )
+}
+
+const INCENSE_OPTIONS = [
+  { type: "comfort", emoji: "🪔", label: "위로의 향", color: "bg-orange-500/15 border-orange-500/30 text-orange-300" },
+  { type: "cheer", emoji: "🔥", label: "응원의 향", color: "bg-red-500/15 border-red-500/30 text-red-300" },
+  { type: "pray", emoji: "🕯️", label: "기도의 향", color: "bg-yellow-500/15 border-yellow-500/30 text-yellow-300" },
+  { type: "love", emoji: "💜", label: "사랑의 향", color: "bg-purple-500/15 border-purple-500/30 text-purple-300" },
+]
+
+function IncenseButtons({ graveId, graveOwnerId, onBurn }: { graveId: string; graveOwnerId: string; onBurn: () => void }) {
+  const [burned, setBurned] = useState<string | null>(null)
+  const [burning, setBurning] = useState(false)
+
+  const handleBurn = async (type: string) => {
+    if (burning) return
+    setBurning(true)
+    try {
+      await dbIncense.burn(graveId, graveOwnerId, type)
+      setBurned(type)
+      onBurn()
+      setTimeout(() => setBurned(null), 3000)
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "향 피우기 실패")
+    }
+    setBurning(false)
+  }
+
+  return (
+    <div className="space-y-2">
+      <p className="text-[10px] text-cemetery-ghost/40 text-center">🪔 묘비에 향 피우기</p>
+      <div className="grid grid-cols-4 gap-2">
+        {INCENSE_OPTIONS.map((opt) => (
+          <button key={opt.type} onClick={() => handleBurn(opt.type)}
+            disabled={burning}
+            className={"flex flex-col items-center gap-1 py-2.5 rounded-xl border transition-all cute-press disabled:opacity-50 " +
+              (burned === opt.type ? opt.color + " scale-105" : "border-cemetery-border bg-cemetery-surface hover:border-cemetery-ghost/30")}>
+            <span className={"text-xl " + (burned === opt.type ? "animate-bounce" : "")}>{opt.emoji}</span>
+            <span className="text-[9px] text-cemetery-ghost/50">{opt.label}</span>
+          </button>
+        ))}
+      </div>
+      {burned && (
+        <p className="text-center text-xs text-orange-300 animate-fade-in">
+          🪔 향이 피어오르고 있어요...
+        </p>
       )}
     </div>
   )

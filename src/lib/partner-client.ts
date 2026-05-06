@@ -34,6 +34,11 @@ export const dbPartner = {
   pendingCount: () => callPartner("partner.pendingCount"),
 }
 
+export const dbIncense = {
+  burn: (graveId: string, graveOwnerId: string, incenseType: string) =>
+    callPartner("incense.burn", { graveId, graveOwnerId, incenseType }),
+}
+
 export const dbGraveComment = {
   list: (graveId: string) => callPartner("comment.list", { graveId }),
   create: (graveId: string, graveOwnerId: string, content: string) =>
