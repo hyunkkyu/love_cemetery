@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
         // 기존 userId의 모든 데이터를 새 userId로 마이그레이션
         const oldUserId = user.userId
         if (oldUserId !== newUserId) {
-          const db = (await import("mongoose")).default.connection.db
+          const db = (await import("mongoose")).default.connection.db!
           const collections = ["graves", "userdatas", "posts", "comments", "crushes", "analysisrecords", "chathistories", "sajuprofiles", "soulpartners", "counsels", "ssumbungs"]
           for (const col of collections) {
             try {
