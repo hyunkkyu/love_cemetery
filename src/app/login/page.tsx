@@ -107,6 +107,15 @@ export default function LoginPage() {
           >
             {loading ? "입장 중..." : "🚪 묘지 입장"}
           </button>
+
+          <div className="flex justify-between text-xs text-cemetery-ghost/40">
+            <a href="/register" className="hover:text-cemetery-accent transition-colors">
+              👻 회원가입
+            </a>
+            <a href="/forgot-password" className="hover:text-cemetery-accent transition-colors">
+              🔑 비밀번호 찾기
+            </a>
+          </div>
         </form>
       </div>
     </div>

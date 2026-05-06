@@ -1,5 +1,16 @@
 import mongoose, { Schema, type Document } from "mongoose"
 
+// 유저 계정
+const UserSchema = new Schema({
+  nickname: { type: String, required: true, unique: true, minlength: 2, maxlength: 12 },
+  hashedPassword: { type: String, required: true },
+  userId: { type: String, required: true, unique: true },
+  securityQuestion: { type: String, required: true },
+  securityAnswer: { type: String, required: true },
+}, { timestamps: true })
+
+export const User = mongoose.models.User || mongoose.model("User", UserSchema)
+
 // 묘비
 export interface IGrave extends Document {
   userId: string

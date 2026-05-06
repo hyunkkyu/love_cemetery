@@ -17,12 +17,32 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         if (typeof nickname !== "string" || typeof password !== "string") return null
         if (!nickname || !password || password.length < 4) return null
 
-        // SHA-256 기반 고유 ID 생성 (기존 해시와 호환을 위해 둘 다 확인 가능)
-        const hash = crypto.createHash("sha256")
-          .update(`${nickname}:${password}`)
-          .digest("hex")
-        const id = `user_${hash.substring(0, 16)}`
+        // User 모델에서 bcrypt 검증 시도
+        try {
+          const mongoose = (await import("mongoose")).default
+          const MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost:27017/love-cemetery"
 
+          if (mongoose.connection.readyState === 0) {
+            await mongoose.connect(MONGODB_URI)
+          }
+
+          const { User } = await import("@/lib/db/models")
+          const bcrypt = (await import("bcryptjs")).default
+
+          const user = await User.findOne({ nickname })
+          if (user) {
+            // 등록된 유저: bcrypt 검증
+            const match = await bcrypt.compare(password, user.hashedPassword)
+            if (!match) return null
+            return { id: user.userId, name: nickname }
+          }
+        } catch {
+          // DB 연결 실패 시 폴백
+        }
+
+        // 미등록 유저: 기존 해시 방식으로 허용 (하위 호환)
+        const hash = crypto.createHash("sha256").update(nickname + ":" + password).digest("hex")
+        const id = "user_" + hash.substring(0, 16)
         return { id, name: nickname }
       },
     }),
@@ -32,9 +52,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   },
   callbacks: {
     async jwt({ token, user }) {
-      if (user) {
-        token.userId = user.id
-      }
+      if (user) token.userId = user.id
       return token
     },
     async session({ session, token }) {
