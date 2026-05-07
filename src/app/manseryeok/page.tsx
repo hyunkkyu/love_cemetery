@@ -116,6 +116,7 @@ export default function ManseryeokPage() {
           question: customQuestion || undefined,
         }),
       })
+      if (res.status === 401) { setAnalysis("⚠️ 로그인이 필요한 기능입니다. 로그인 후 다시 시도해주세요."); return }
       if (!res.ok) { setAnalysis("분석 서버 오류. 다시 시도해주세요."); return }
       const data = await res.json()
       setAnalysis(data.interpretation || "분석 결과를 가져올 수 없습니다.")

@@ -8,6 +8,10 @@ export const maxDuration = 60
 
 export async function POST(request: NextRequest) {
   try {
+    const session = await auth()
+    if (!(session?.user as { id?: string })?.id) {
+      return NextResponse.json({ analysis: "⚠️ 로그인이 필요한 기능입니다." }, { status: 401 })
+    }
     const body = await request.json()
     let prompt: string
 

@@ -17,11 +17,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         if (typeof nickname !== "string" || typeof password !== "string") return null
         if (!nickname || !password || password.length < 4) return null
 
-        // User 모델에서 bcrypt 검증 시도
         try {
           const mongoose = (await import("mongoose")).default
           const MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost:27017/love-cemetery"
-
           if (mongoose.connection.readyState === 0) {
             await mongoose.connect(MONGODB_URI)
           }
@@ -31,7 +29,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
           const user = await User.findOne({ nickname })
           if (user) {
-            // 등록된 유저: bcrypt 검증
+            // 등록된 유저: bcrypt 검증만 → 실패 시 로그인 거부 (다른 비번 차단)
             const match = await bcrypt.compare(password, user.hashedPassword)
             if (!match) return null
             return { id: user.userId, name: nickname }
@@ -40,16 +38,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           // DB 연결 실패 시 폴백
         }
 
-        // 미등록 유저: 기존 해시 방식으로 허용 (하위 호환)
+        // 미등록 유저: 기존 해시 방식 허용 (하위 호환)
         const hash = crypto.createHash("sha256").update(nickname + ":" + password).digest("hex")
         const id = "user_" + hash.substring(0, 16)
         return { id, name: nickname }
       },
     }),
   ],
-  pages: {
-    signIn: "/login",
-  },
+  pages: { signIn: "/login" },
   callbacks: {
     async jwt({ token, user }) {
       if (user) token.userId = user.id

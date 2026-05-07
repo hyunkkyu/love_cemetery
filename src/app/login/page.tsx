@@ -64,7 +64,7 @@ export default function LoginPage() {
           </h1>
           <p className="text-cemetery-ghost text-sm">
             닉네임과 비밀번호로 입장하세요<br />
-            처음이면 자동으로 등록됩니다
+            계정이 없다면 <a href="/register" className="text-cemetery-accent hover:underline">회원가입</a>해주세요
           </p>
         </div>
 
@@ -96,7 +96,12 @@ export default function LoginPage() {
           </div>
 
           {error && (
-            <p className="text-red-400 text-sm text-center">{error}</p>
+            <div className="text-center space-y-1">
+              <p className="text-red-400 text-sm">{error}</p>
+              <a href="/forgot-password" className="text-xs text-cemetery-accent hover:underline">
+                🔑 비밀번호를 잊으셨나요?
+              </a>
+            </div>
           )}
 
           <button
