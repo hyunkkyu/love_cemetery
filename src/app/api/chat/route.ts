@@ -7,9 +7,10 @@ export const maxDuration = 60
 export async function POST(request: NextRequest) {
   try {
     const session = await auth()
-    if (!(session?.user as { id?: string })?.id) {
-      return NextResponse.json({ reply: "⚠️ 로그인이 필요한 기능입니다." }, { status: 401 })
-    }
+    const uid = (session?.user as { id?: string })?.id
+    if (!uid) return NextResponse.json({ reply: "⚠️ 로그인이 필요한 기능입니다." }, { status: 401 })
+    const { checkRateLimit } = await import("@/lib/rate-limit")
+    if (!checkRateLimit(uid, 10, 60000)) return NextResponse.json({ reply: "⚠️ 너무 많은 요청입니다. 1분 후 다시 시도해주세요." }, { status: 429 })
     const { message, nickname, myName, persona, chatSamples, chatHistory } = await request.json()
 
     if (!message || !nickname) {

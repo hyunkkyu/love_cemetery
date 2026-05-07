@@ -47,11 +47,7 @@ export default function GravePage() {
     if (!userId) return
     try {
       await dbGraves.save(userId, grave as unknown as Record<string, unknown>)
-      const grade = grave.grade || "public"
-      const gradeInfo = GRAVE_GRADES[grade]
-      if (gradeInfo) {
-        await dbUser.addCoins(userId, gradeInfo.coins)
-      }
+      // 코인 보상은 서버에서 자동 처리됨
       setShowForm(false)
       await reload()
     } catch (err) {

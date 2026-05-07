@@ -51,19 +51,23 @@ export async function POST(request: NextRequest) {
         const { id: graveId, ...graveRest } = grave
         const graveData = { ...graveRest, userId }
 
-        // 기존 묘비 업데이트
+        // 기존 묘비 업데이트 (코인 보상 없음)
         if (graveId) {
           const existing = await Grave.findOne({ _id: graveId, userId }).catch(() => null)
           if (existing) {
-            Object.assign(existing, graveData)
-            await existing.save()
-            return NextResponse.json({ data: serialize(existing.toObject()) })
+            const { _id, userId: _, createdAt, ...allowed } = graveData as Record<string, unknown>
+            await Grave.findOneAndUpdate({ _id: graveId, userId }, { $set: allowed })
+            const updated = await Grave.findOne({ _id: graveId, userId }).lean()
+            return NextResponse.json({ data: updated ? serialize(updated as Record<string, unknown>) : null })
           }
         }
 
-        // 새 묘비 (MongoDB가 _id 자동 생성)
+        // 새 묘비 + 서버에서 코인 보상
         const doc = await Grave.create(graveData)
-        return NextResponse.json({ data: serialize(doc.toObject()) })
+        const gradeCoins: Record<string, number> = { national: 400, public: 300, sea: 100 }
+        const reward = gradeCoins[String(grave.grade)] || 300
+        await UserData.findOneAndUpdate({ userId }, { $inc: { coins: reward } }, { upsert: true })
+        return NextResponse.json({ data: serialize(doc.toObject()), coinReward: reward })
       }
       case "graves.delete": {
         await Grave.deleteOne({ _id: payload.graveId, userId })
@@ -80,16 +84,8 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ data: serialize(user as Record<string, unknown>) })
       }
       case "user.addCoins": {
-        const amount = Number(payload.amount)
-        if (!Number.isFinite(amount) || amount <= 0) {
-          return NextResponse.json({ error: "Invalid amount" }, { status: 400 })
-        }
-        const user = await UserData.findOneAndUpdate(
-          { userId },
-          { $inc: { coins: amount } },
-          { upsert: true, new: true }
-        ).lean()
-        return NextResponse.json({ data: serialize(user as Record<string, unknown>) })
+        // 클라이언트 직접 호출 차단 - 서버 내부에서만 코인 지급
+        return NextResponse.json({ error: "이 작업은 허용되지 않습니다" }, { status: 403 })
       }
       case "user.spendCoins": {
         const amount = Number(payload.amount)

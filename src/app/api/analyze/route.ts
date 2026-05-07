@@ -9,9 +9,10 @@ export const maxDuration = 60
 export async function POST(request: NextRequest) {
   try {
     const session = await auth()
-    if (!(session?.user as { id?: string })?.id) {
-      return NextResponse.json({ analysis: "⚠️ 로그인이 필요한 기능입니다." }, { status: 401 })
-    }
+    const uid = (session?.user as { id?: string })?.id
+    if (!uid) return NextResponse.json({ analysis: "⚠️ 로그인이 필요한 기능입니다." }, { status: 401 })
+    const { checkRateLimit } = await import("@/lib/rate-limit")
+    if (!checkRateLimit(uid, 5, 60000)) return NextResponse.json({ analysis: "⚠️ 너무 많은 요청입니다. 1분 후 다시 시도해주세요." }, { status: 429 })
     const body = await request.json()
     let prompt: string
 

@@ -35,13 +35,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             return { id: user.userId, name: nickname }
           }
         } catch {
-          // DB 연결 실패 시 폴백
+          // DB 연결 실패
+          return null
         }
 
-        // 미등록 유저: 기존 해시 방식 허용 (하위 호환)
-        const hash = crypto.createHash("sha256").update(nickname + ":" + password).digest("hex")
-        const id = "user_" + hash.substring(0, 16)
-        return { id, name: nickname }
+        // 미등록 유저 → 로그인 거부 (회원가입 필요)
+        return null
       },
     }),
   ],

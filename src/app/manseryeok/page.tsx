@@ -206,19 +206,22 @@ export default function ManseryeokPage() {
     setChatLoading(true)
 
     try {
-      // 코인 차감
-      const spendRes = await fetch("/api/data", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "user.spendCoins", amount: 50 }),
-      })
-      const spendData = await spendRes.json()
-      if (spendData.error) {
-        setChatMessages((prev) => [...prev, { role: "ai", text: "⚠️ 코인이 부족합니다. (1회 50코인)" }])
-        setChatLoading(false)
-        return
+      // 첫 1회 무료, 이후 50코인
+      const isFirstChat = chatMessages.length === 0
+      if (!isFirstChat) {
+        const spendRes = await fetch("/api/data", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "user.spendCoins", amount: 50 }),
+        })
+        const spendData = await spendRes.json()
+        if (spendData.error) {
+          setChatMessages((prev) => [...prev, { role: "ai", text: "⚠️ 코인이 부족합니다. (1회 50코인, 첫 질문은 무료!)" }])
+          setChatLoading(false)
+          return
+        }
+        setChatCoins(spendData.data?.coins ?? null)
       }
-      setChatCoins(spendData.data?.coins ?? null)
 
       // 이전 대화 맥락
       const historyText = chatMessages.slice(-6).map((m) =>
@@ -356,7 +359,9 @@ export default function ManseryeokPage() {
             <div className="bg-cemetery-card border border-cemetery-border rounded-2xl overflow-hidden">
               <div className="px-5 py-3 bg-cemetery-surface/50 flex items-center justify-between">
                 <h3 className="text-sm font-semibold text-cemetery-heading">💬 추가 질문</h3>
-                <span className="text-[10px] text-yellow-400">🪙 1회 50코인 {chatCoins !== null ? `(보유: ${chatCoins})` : ""}</span>
+                <span className="text-[10px] text-yellow-400">
+                  {chatMessages.length === 0 ? "✨ 첫 질문 무료!" : "🪙 50코인/회"} {chatCoins !== null ? `(보유: ${chatCoins})` : ""}
+                </span>
               </div>
 
               {/* 대화 내역 */}
