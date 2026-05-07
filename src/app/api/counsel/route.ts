@@ -125,12 +125,9 @@ export async function POST(request: NextRequest) {
             }).join("\n\n")
           : ""
 
-        const prompt = `너는 "명예의전당" 앱의 전문 연애 상담사야. ${userName}님이 상담을 요청했어.
+        const prompt = `${userName}님이 연애 상담을 요청했어.
 
-[${userName}님의 정보]
-${profileInfo}
-
-[과거 연애 기록 (묘비)]
+[과거 연애 기록]
 ${graveSummary}
 
 ${contextText ? `[이전 상담 맥락]\n${contextText}\n` : ""}
@@ -139,14 +136,15 @@ ${contextText ? `[이전 상담 맥락]\n${contextText}\n` : ""}
 ${question}
 
 다음 원칙으로 상담해줘:
-1. 사주/만세력 데이터가 있으면 오행 관점에서도 분석
-2. 과거 연애 패턴을 참고하여 반복되는 문제인지 진단
-3. 공감 먼저, 그 다음 솔직한 조언
-4. 구체적이고 실행 가능한 액션 플랜 제시
-5. 필요하면 뼈때리는 직언도 (단, 따뜻한 톤으로)
-6. 500~800자로 답변`
+1. 과거 연애 패턴(묘비 기록)을 참고해서 반복되는 문제인지 진단
+2. 상대의 행동 패턴, 심리, 연애 역학 관점에서 분석
+3. 공감 먼저, 그 다음 솔직한 현실 조언
+4. "이번 주에 이렇게 해봐" 같은 구체적 액션 플랜 제시
+5. 필요하면 뼈때리는 직언도 (단, 친구처럼 따뜻하게)
+6. 사주/오행/궁합 점수 같은 운명학 용어는 절대 사용하지 마
+7. 500~800자로 답변`
 
-        const answer = await callLLM(prompt, "medium")
+        const answer = await callLLM(prompt, "medium", "counselor")
 
         // 상담 기록 저장
         await Counsel.create({ userId, question, answer, coinUsed })
