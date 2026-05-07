@@ -137,49 +137,77 @@ export default function HomePage() {
       {/* 주간 리포트 */}
       <WeeklyReport />
 
-      {/* 기능 안내 */}
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-6 py-8">
-        <FeatureCard
-          pixelArtId="deco-photo"
-          title="카톡 분석"
-          description="카카오톡 대화 파일을 업로드하면 대화 패턴, 감정 온도, 응답 속도 등을 분석합니다."
-        />
-        <FeatureCard
-          pixelArtId="candle-eternal"
-          title="만세력 궁합"
-          description="생년월일시를 입력하면 사주팔자를 계산하고 두 사람의 궁합을 분석합니다."
-        />
-        <FeatureCard
-          pixelArtId="special-fairy"
-          title="비교 분석"
-          description="과거 연인과 새로운 만남을 비교 분석하여 패턴과 차이를 보여줍니다."
-        />
+      {/* 이렇게 사용하세요 */}
+      <section className="space-y-4">
+        <h2 className="font-gothic text-xl text-cemetery-heading text-center">
+          🗺️ 이렇게 사용하세요
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <GuideStep
+            step="1" emoji="🪦" title="묘비 세우기"
+            desc="과거 연인 정보를 등록하면 사주 궁합, 카톡 분석까지. 등급별 코인 보상!"
+            href="/grave" color="text-cemetery-accent"
+          />
+          <GuideStep
+            step="2" emoji="🔮" title="운명 분석"
+            desc="6가지 학문 교차검증! 궁금한 주제를 선택하거나 자유롭게 질문하세요."
+            href="/manseryeok" color="text-blue-400"
+          />
+          <GuideStep
+            step="3" emoji="💘" title="살랑살랑"
+            desc="지금 만나는 사람의 궁합을 보고, 과거 연애와 비교해서 AI가 조언해줘요."
+            href="/love" color="text-pink-400"
+          />
+          <GuideStep
+            step="4" emoji="💔" title="썸붕 분석"
+            desc="썸이 왜 깨졌는지 사주 + 연애고수 관점으로. 팩폭 강도도 조절 가능!"
+            href="/ssum" color="text-red-400"
+          />
+          <GuideStep
+            step="5" emoji="🧙" title="연애 상담"
+            desc="내 기록을 바탕으로 AI 상담사가 맞춤 조언. 하루 3회 무료!"
+            href="/counsel" color="text-green-400"
+          />
+          <GuideStep
+            step="6" emoji="👻" title="커뮤니티"
+            desc="다른 유령들과 연애 이야기를 나누고, 동반자와 서로 묘비에 향을 피워요."
+            href="/community" color="text-purple-400"
+          />
+        </div>
+        <div className="flex gap-3 justify-center pt-2">
+          <a href="/shop" className="px-4 py-2 bg-cemetery-card border border-cemetery-border rounded-xl text-xs text-cemetery-ghost hover:border-cemetery-accent transition-colors">
+            🛒 상점
+          </a>
+          <a href="/stats" className="px-4 py-2 bg-cemetery-card border border-cemetery-border rounded-xl text-xs text-cemetery-ghost hover:border-cemetery-accent transition-colors">
+            📊 통계
+          </a>
+          <a href="/invite" className="px-4 py-2 bg-cemetery-card border border-cemetery-border rounded-xl text-xs text-cemetery-ghost hover:border-cemetery-accent transition-colors">
+            🎁 초대
+          </a>
+          <a href="/notice" className="px-4 py-2 bg-cemetery-card border border-cemetery-border rounded-xl text-xs text-cemetery-ghost hover:border-cemetery-accent transition-colors">
+            📢 공지
+          </a>
+        </div>
       </section>
     </div>
   )
 }
 
-function FeatureCard({
-  pixelArtId,
-  title,
-  description,
-}: {
-  pixelArtId: string
-  title: string
-  description: string
+function GuideStep({ step, emoji, title, desc, href, color }: {
+  step: string; emoji: string; title: string; desc: string; href: string; color: string
 }) {
-  const grid = PIXEL_ARTS[pixelArtId]
   return (
-    <div className="tombstone-hover p-6 bg-cemetery-card border border-cemetery-border rounded-xl text-center">
-      <div className="flex justify-center mb-4">
-        {grid && <PixelArt grid={grid} scale={4} />}
+    <a href={href} className="flex gap-3 p-4 bg-cemetery-card border border-cemetery-border rounded-2xl tombstone-hover transition-all">
+      <div className="flex-shrink-0 w-10 h-10 rounded-full bg-cemetery-surface flex items-center justify-center">
+        <span className="text-xl">{emoji}</span>
       </div>
-      <h3 className="font-gothic text-lg font-bold text-cemetery-heading mb-2">
-        {title}
-      </h3>
-      <p className="text-cemetery-ghost text-sm leading-relaxed">
-        {description}
-      </p>
-    </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <span className={"text-[10px] font-bold " + color}>STEP {step}</span>
+          <span className="text-sm font-semibold text-cemetery-heading">{title}</span>
+        </div>
+        <p className="text-xs text-cemetery-ghost/60 mt-0.5 leading-relaxed">{desc}</p>
+      </div>
+    </a>
   )
 }

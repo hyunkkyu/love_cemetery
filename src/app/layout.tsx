@@ -6,6 +6,7 @@ import { FeedbackWidget } from "@/components/FeedbackWidget"
 import { SessionGuard } from "@/components/SessionGuard"
 import { DailyFortune } from "@/components/DailyFortune"
 import { Tutorial } from "@/components/Tutorial"
+import { FloatingGhosts } from "@/components/FloatingGhosts"
 
 import type { Viewport } from "next"
 
@@ -43,15 +44,10 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen font-sans antialiased">
         <AuthProvider>
-          {/* 배경 안개 + 유령 파티클 */}
+          {/* 배경 안개 + 픽셀 유령 */}
+          <FloatingGhosts />
           <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
             <div className="fog-layer absolute inset-0 bg-gradient-to-r from-fog via-transparent to-fog" />
-            {/* 떠다니는 유령들 */}
-            <span className="ghost-wander absolute text-2xl" style={{ top: "15%", left: "5%", animationDelay: "0s" }}>👻</span>
-            <span className="ghost-wander absolute text-lg" style={{ top: "60%", right: "8%", animationDelay: "7s" }}>👻</span>
-            <span className="ghost-wander absolute text-xl" style={{ top: "35%", left: "80%", animationDelay: "13s" }}>🕯️</span>
-            <span className="ghost-wander absolute text-sm" style={{ top: "80%", left: "20%", animationDelay: "4s" }}>✨</span>
-            <span className="ghost-wander absolute text-lg" style={{ top: "10%", right: "30%", animationDelay: "10s" }}>🪦</span>
             <div
               className="fog-layer absolute inset-0 bg-gradient-to-b from-transparent via-fog to-transparent"
               style={{ animationDelay: "7s" }}
