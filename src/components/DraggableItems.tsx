@@ -10,7 +10,7 @@ interface ItemPosition {
   itemId: string
   x: number
   y: number
-  scale?: number // 1~6, 기본 3
+  scale?: number
 }
 
 interface OwnedItem { itemId: string; equippedOn?: string }
@@ -21,15 +21,17 @@ export function DraggableItems({ graveId }: { graveId: string }) {
   const [equipped, setEquipped] = useState<OwnedItem[]>([])
   const [positions, setPositions] = useState<ItemPosition[]>([])
   const [dragging, setDragging] = useState<string | null>(null)
+  const [didMove, setDidMove] = useState(false)
   const [selected, setSelected] = useState<string | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
+  const posRef = useRef(positions)
+  posRef.current = positions
 
   useEffect(() => {
     if (!userId) return
     dbUser.get(userId).then((data) => {
       const items = (data?.ownedItems || []).filter((i: OwnedItem) => i.equippedOn === graveId)
       setEquipped(items)
-
       const savedPositions = data?.itemPositions?.[graveId] || []
       const allPositions = items.map((item: OwnedItem, i: number) => {
         const existing = savedPositions.find((p: ItemPosition) => p.itemId === item.itemId)
@@ -42,17 +44,18 @@ export function DraggableItems({ graveId }: { graveId: string }) {
 
   if (!userId || equipped.length === 0) return null
 
-  const savePositions = () => {
-    dbUser.savePositions(userId, graveId, positions).catch(() => {})
+  const save = () => {
+    dbUser.savePositions(userId, graveId, posRef.current).catch(() => {})
   }
 
   const handlePointerDown = (itemId: string) => {
     setDragging(itemId)
-    setSelected(itemId)
+    setDidMove(false)
   }
 
   const handlePointerMove = (e: React.PointerEvent) => {
     if (!dragging || !containerRef.current) return
+    setDidMove(true)
     const rect = containerRef.current.getBoundingClientRect()
     const x = ((e.clientX - rect.left) / rect.width) * 100
     const y = ((e.clientY - rect.top) / rect.height) * 100
@@ -65,23 +68,28 @@ export function DraggableItems({ graveId }: { graveId: string }) {
     )
   }
 
-  const handlePointerUp = () => {
-    if (dragging) savePositions()
+  const handlePointerUp = (itemId?: string) => {
+    if (dragging) {
+      if (didMove) {
+        save()
+      } else if (itemId) {
+        // 클릭 (이동 안 함) → 선택 토글
+        setSelected((prev) => prev === itemId ? null : itemId)
+      }
+    }
     setDragging(null)
+    setDidMove(false)
   }
 
   const handleResize = (itemId: string, delta: number) => {
-    setPositions((prev) =>
-      prev.map((p) =>
-        p.itemId === itemId
-          ? { ...p, scale: Math.max(1, Math.min(6, (p.scale || 3) + delta)) }
-          : p
-      )
+    const newPositions = positions.map((p) =>
+      p.itemId === itemId
+        ? { ...p, scale: Math.max(1, Math.min(8, (p.scale || 3) + delta)) }
+        : p
     )
-    // 약간의 딜레이 후 저장
-    setTimeout(() => {
-      dbUser.savePositions(userId, graveId, positions).catch(() => {})
-    }, 300)
+    setPositions(newPositions)
+    posRef.current = newPositions
+    save()
   }
 
   return (
@@ -90,8 +98,8 @@ export function DraggableItems({ graveId }: { graveId: string }) {
       className="relative w-full h-full min-h-[200px] pointer-events-auto"
       style={{ touchAction: "none" }}
       onPointerMove={handlePointerMove}
-      onPointerUp={handlePointerUp}
-      onPointerLeave={handlePointerUp}
+      onPointerUp={() => handlePointerUp()}
+      onPointerLeave={() => { if (dragging) { save(); setDragging(null) } }}
       onClick={() => setSelected(null)}
     >
       {positions.map((pos) => {
@@ -107,42 +115,49 @@ export function DraggableItems({ graveId }: { graveId: string }) {
           <div
             key={pos.itemId}
             className={"absolute select-none " +
-              (isDragging ? "z-50 cursor-grabbing" : "z-10 cursor-grab hover:z-20")}
+              (isDragging ? "z-50 cursor-grabbing" : isSelected ? "z-40" : "z-10 cursor-grab hover:z-20")}
             style={{
               left: pos.x + "%",
               top: pos.y + "%",
               transform: "translate(-50%, -50%)",
             }}
-            onClick={(e) => { e.stopPropagation(); setSelected(isSelected ? null : pos.itemId) }}
             onPointerDown={(e) => {
               e.preventDefault()
               e.stopPropagation()
               handlePointerDown(pos.itemId)
             }}
+            onPointerUp={(e) => {
+              e.stopPropagation()
+              handlePointerUp(pos.itemId)
+            }}
+            onClick={(e) => e.stopPropagation()}
           >
             <div className={"transition-all " +
               (isDragging ? "drop-shadow-[0_0_10px_rgba(107,92,231,0.5)]" : "") +
-              (isSelected ? " ring-2 ring-cemetery-accent/50 rounded-lg" : "")}>
+              (isSelected && !isDragging ? " ring-2 ring-cemetery-accent rounded-lg p-0.5" : "")}>
               <PixelArt grid={pixelGrid} scale={itemScale} animated={isDragging} />
             </div>
 
-            {/* 크기 조절 버튼 */}
+            {/* 크기 조절 UI */}
             {isSelected && !isDragging && (
-              <div className="absolute -bottom-7 left-1/2 -translate-x-1/2 flex gap-1 animate-fade-in" onClick={(e) => e.stopPropagation()}>
+              <div
+                className="absolute left-1/2 -translate-x-1/2 flex items-center gap-1 mt-1 z-[60] animate-fade-in"
+                style={{ top: "100%" }}
+                onClick={(e) => e.stopPropagation()}
+                onPointerDown={(e) => e.stopPropagation()}
+              >
                 <button
-                  onPointerDown={(e) => e.stopPropagation()}
-                  onClick={(e) => { e.stopPropagation(); handleResize(pos.itemId, -1) }}
-                  className="w-6 h-6 bg-cemetery-card border border-cemetery-border rounded text-xs text-cemetery-ghost hover:text-cemetery-heading hover:border-cemetery-accent transition-colors flex items-center justify-center"
+                  onClick={() => handleResize(pos.itemId, -1)}
+                  className="w-7 h-7 bg-cemetery-card border border-cemetery-border rounded-full text-sm text-cemetery-ghost
+                    hover:text-cemetery-heading hover:border-cemetery-accent transition-colors flex items-center justify-center"
                 >
                   −
                 </button>
-                <span className="w-6 h-6 flex items-center justify-center text-[9px] text-cemetery-ghost/40">
-                  {itemScale}
-                </span>
+                <span className="text-[10px] text-cemetery-ghost/50 w-5 text-center">{itemScale}</span>
                 <button
-                  onPointerDown={(e) => e.stopPropagation()}
-                  onClick={(e) => { e.stopPropagation(); handleResize(pos.itemId, 1) }}
-                  className="w-6 h-6 bg-cemetery-card border border-cemetery-border rounded text-xs text-cemetery-ghost hover:text-cemetery-heading hover:border-cemetery-accent transition-colors flex items-center justify-center"
+                  onClick={() => handleResize(pos.itemId, 1)}
+                  className="w-7 h-7 bg-cemetery-card border border-cemetery-border rounded-full text-sm text-cemetery-ghost
+                    hover:text-cemetery-heading hover:border-cemetery-accent transition-colors flex items-center justify-center"
                 >
                   +
                 </button>
