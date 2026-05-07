@@ -7,6 +7,7 @@ import { SessionGuard } from "@/components/SessionGuard"
 import { DailyFortune } from "@/components/DailyFortune"
 import { Tutorial } from "@/components/Tutorial"
 import { FloatingGhosts } from "@/components/FloatingGhosts"
+import { ServiceWorkerRegister } from "@/components/ServiceWorker"
 
 import type { Viewport } from "next"
 
@@ -15,6 +16,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
+  themeColor: "#0c0c14",
 }
 
 export const metadata: Metadata = {
@@ -25,8 +27,9 @@ export const metadata: Metadata = {
       { url: "/favicon.svg", type: "image/svg+xml" },
       { url: "/favicon.png", type: "image/png" },
     ],
-    apple: "/apple-touch-icon.png",
+    apple: "/icon-192.png",
   },
+  manifest: "/manifest.json",
 }
 
 export default function RootLayout({
@@ -64,6 +67,7 @@ export default function RootLayout({
           <SessionGuard />
           <Tutorial />
           <DailyFortune />
+          <ServiceWorkerRegister />
           <FeedbackWidget />
         </AuthProvider>
       </body>
