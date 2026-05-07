@@ -1,6 +1,13 @@
 import { NextRequest, NextResponse } from "next/server"
 import { connectDB } from "@/lib/db/mongoose"
-import { Grave, UserData, Crush, AnalysisRecord, ChatHistory, ManseryeokChat } from "@/lib/db/models"
+import { Grave, UserData, Crush, AnalysisRecord, ChatHistory, ManseryeokChat, CoinLog } from "@/lib/db/models"
+
+async function logCoin(userId: string, amount: number, reason: string) {
+  try {
+    const user = await UserData.findOne({ userId })
+    await CoinLog.create({ userId, amount, reason, balance: user?.coins || 0 })
+  } catch { /* ignore */ }
+}
 import { auth } from "@/lib/auth"
 
 function serialize(doc: Record<string, unknown>) {
@@ -67,6 +74,7 @@ export async function POST(request: NextRequest) {
         const gradeCoins: Record<string, number> = { national: 400, public: 300, sea: 100 }
         const reward = gradeCoins[String(grave.grade)] || 300
         await UserData.findOneAndUpdate({ userId }, { $inc: { coins: reward } }, { upsert: true })
+        await logCoin(userId, reward, "묘비 등록 (" + (grave.nickname || "?") + ")")
         return NextResponse.json({ data: serialize(doc.toObject()), coinReward: reward })
       }
       case "graves.delete": {
@@ -101,6 +109,7 @@ export async function POST(request: NextRequest) {
         if (!result) {
           return NextResponse.json({ error: "코인 부족", data: null })
         }
+        await logCoin(userId, -amount, String(payload.reason || "코인 사용"))
         return NextResponse.json({ data: serialize(result as Record<string, unknown>) })
       }
       case "user.addItem": {
@@ -238,6 +247,39 @@ export async function POST(request: NextRequest) {
       }
 
       // === 만세력 채팅 보관 ===
+      // === 마이페이지 ===
+      case "mypage.coinLog": {
+        const logs = await CoinLog.find({ userId }).sort({ createdAt: -1 }).limit(50).lean()
+        return NextResponse.json({ data: logs.map(serialize) })
+      }
+
+      case "mypage.stats": {
+        const [graveCount, postCount, commentCount, counselCount, ssumCount] = await Promise.all([
+          Grave.countDocuments({ userId }),
+          (await import("@/lib/db/community-models")).Post.countDocuments({ userId }),
+          (await import("@/lib/db/community-models")).Comment.countDocuments({ userId }),
+          (await import("mongoose")).default.connection.db!.collection("counsels").countDocuments({ userId }),
+          (await import("mongoose")).default.connection.db!.collection("ssumbungs").countDocuments({ userId }),
+        ])
+        // 내 묘비 랭킹
+        const allUsers = await Grave.aggregate([
+          { $group: { _id: "$userId", count: { $sum: 1 } } },
+          { $sort: { count: -1 } },
+        ])
+        const myRank = allUsers.findIndex((u) => u._id === userId) + 1
+
+        const user = await UserData.findOne({ userId }).lean()
+        return NextResponse.json({
+          data: {
+            coins: (user as Record<string, unknown>)?.coins || 0,
+            inviteCount: (user as Record<string, unknown>)?.inviteCount || 0,
+            graveCount, postCount, commentCount, counselCount, ssumCount,
+            graveRank: myRank || "순위 없음",
+            totalUsers: allUsers.length,
+          },
+        })
+      }
+
       case "msChat.save": {
         const { chatId, birthDate: bd, name: nm, analysis: an, messages: msgs } = payload as Record<string, unknown>
         const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7일 후

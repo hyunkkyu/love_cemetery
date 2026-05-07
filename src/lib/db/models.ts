@@ -24,7 +24,16 @@ const ManseryeokChatSchema = new Schema({
   expiresAt: { type: Date, index: true }, // 7일 후 만료
 }, { timestamps: true })
 
+// 코인 내역 로그
+const CoinLogSchema = new Schema({
+  userId: { type: String, required: true, index: true },
+  amount: { type: Number, required: true },
+  reason: { type: String, required: true },
+  balance: Number,
+}, { timestamps: true })
+
 export const ManseryeokChat = mongoose.models.ManseryeokChat || mongoose.model("ManseryeokChat", ManseryeokChatSchema)
+export const CoinLog = mongoose.models.CoinLog || mongoose.model("CoinLog", CoinLogSchema)
 
 // AI 분석 로그 (모든 AI 호출 자동 저장)
 const AiLogSchema = new Schema({

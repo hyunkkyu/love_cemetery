@@ -88,6 +88,9 @@ export default function HomePage() {
           만세력과 카톡 분석으로 과거를 돌아보고,<br />
           새로운 인연과 비교해보세요.
         </p>
+        {/* 코인 표시 */}
+        <CoinBadge />
+
         <div className="flex gap-4 justify-center pt-4">
           <a
             href="/grave"
@@ -208,6 +211,31 @@ function GuideStep({ step, emoji, title, desc, href, color }: {
         </div>
         <p className="text-xs text-cemetery-ghost/60 mt-0.5 leading-relaxed">{desc}</p>
       </div>
+    </a>
+  )
+}
+
+function CoinBadge() {
+  const [coins, setCoins] = useState<number | null>(null)
+  const { data: session } = useSession()
+
+  useEffect(() => {
+    if (!session?.user) return
+    fetch("/api/data", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "user.get" }),
+    }).then(r => r.json()).then(d => setCoins(d.data?.coins ?? null)).catch(() => {})
+  }, [session])
+
+  if (coins === null) return null
+
+  return (
+    <a href="/mypage"
+      className="inline-flex items-center gap-2 px-4 py-2 bg-cemetery-card border border-yellow-500/20 rounded-full
+        hover:border-yellow-500/40 transition-colors">
+      <span className="text-yellow-400 font-bold">🪙 {coins.toLocaleString()}</span>
+      <span className="text-[10px] text-cemetery-ghost/40">마이페이지 →</span>
     </a>
   )
 }

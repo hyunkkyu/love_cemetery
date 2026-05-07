@@ -158,7 +158,7 @@ function AuthButton({ session, status, router }: {
   if (session?.user) {
     return (
       <div className="flex items-center gap-2">
-        <span className="text-cemetery-accent text-xs hidden sm:inline">👻 {session.user.name}</span>
+        <a href="/mypage" className="text-cemetery-accent text-xs hidden sm:inline hover:underline">👻 {session.user.name}</a>
         <button onClick={() => signOut({ callbackUrl: "/" })}
           className="px-2.5 py-1 text-xs bg-cemetery-card border border-cemetery-border hover:border-red-500/50 rounded-lg transition-colors">
           퇴장
