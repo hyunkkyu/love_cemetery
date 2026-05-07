@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { connectDB } from "@/lib/db/mongoose"
-import { Grave, UserData, Crush, AnalysisRecord, ChatHistory } from "@/lib/db/models"
+import { Grave, UserData, Crush, AnalysisRecord, ChatHistory, ManseryeokChat } from "@/lib/db/models"
 import { auth } from "@/lib/auth"
 
 function serialize(doc: Record<string, unknown>) {
@@ -239,6 +239,84 @@ export async function POST(request: NextRequest) {
         await UserData.findOneAndUpdate({ inviteCode: code }, { $inc: { coins: 200, inviteCount: 1 } })
 
         return NextResponse.json({ data: { reward: 200 } })
+      }
+
+      // === 만세력 채팅 보관 ===
+      case "msChat.save": {
+        const { chatId, birthDate: bd, name: nm, analysis: an, messages: msgs } = payload as Record<string, unknown>
+        const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7일 후
+        if (chatId) {
+          await ManseryeokChat.findOneAndUpdate(
+            { _id: chatId, userId },
+            { $set: { messages: msgs } }
+          )
+          return NextResponse.json({ data: { id: chatId } })
+        }
+        const doc = await ManseryeokChat.create({
+          userId, birthDate: bd, name: nm,
+          analysis: String(an || "").slice(0, 500),
+          messages: msgs || [],
+          expiresAt,
+        })
+        return NextResponse.json({ data: serialize(doc.toObject()) })
+      }
+
+      case "msChat.list": {
+        const chats = await ManseryeokChat.find({
+          userId,
+          $or: [
+            { isPermanent: true },
+            { expiresAt: { $gt: new Date() } },
+          ],
+        }).sort({ createdAt: -1 }).limit(20).lean()
+
+        const now = Date.now()
+        const result = chats.map((c) => {
+          const doc = c as Record<string, unknown>
+          const expires = doc.expiresAt ? new Date(doc.expiresAt as string).getTime() : 0
+          const daysLeft = Math.max(0, Math.ceil((expires - now) / (24 * 60 * 60 * 1000)))
+          return {
+            ...serialize(doc),
+            daysLeft: doc.isPermanent ? -1 : daysLeft, // -1 = 영구
+            isExpiring: !doc.isPermanent && daysLeft <= 2,
+          }
+        })
+        return NextResponse.json({ data: result })
+      }
+
+      case "msChat.get": {
+        const doc = await ManseryeokChat.findOne({ _id: payload.chatId, userId }).lean()
+        if (!doc) return NextResponse.json({ data: null })
+        const d = doc as Record<string, unknown>
+        const expires = d.expiresAt ? new Date(d.expiresAt as string).getTime() : 0
+        const daysLeft = d.isPermanent ? -1 : Math.max(0, Math.ceil((expires - Date.now()) / (24 * 60 * 60 * 1000)))
+
+        // 만료 확인
+        if (!d.isPermanent && daysLeft <= 0) {
+          return NextResponse.json({ data: null, expired: true })
+        }
+        return NextResponse.json({ data: { ...serialize(d), daysLeft } })
+      }
+
+      case "msChat.extend": {
+        // 10코인으로 영구 보관
+        const spendResult = await UserData.findOneAndUpdate(
+          { userId, coins: { $gte: 10 } },
+          { $inc: { coins: -10 } },
+          { returnDocument: "after" }
+        )
+        if (!spendResult) return NextResponse.json({ error: "코인이 부족합니다 (10코인 필요)" }, { status: 400 })
+
+        await ManseryeokChat.findOneAndUpdate(
+          { _id: payload.chatId, userId },
+          { $set: { isPermanent: true }, $unset: { expiresAt: "" } }
+        )
+        return NextResponse.json({ data: { success: true, coins: spendResult.coins } })
+      }
+
+      case "msChat.delete": {
+        await ManseryeokChat.deleteOne({ _id: payload.chatId, userId })
+        return NextResponse.json({ data: true })
       }
 
       default:

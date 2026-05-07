@@ -58,6 +58,9 @@ export default function ManseryeokPage() {
   const [chatInput, setChatInput] = useState("")
   const [chatLoading, setChatLoading] = useState(false)
   const [chatCoins, setChatCoins] = useState<number | null>(null)
+  const [chatId, setChatId] = useState<string | null>(null)
+  const [savedChats, setSavedChats] = useState<Array<Record<string, unknown>>>([])
+  const [showHistory, setShowHistory] = useState(false)
   const chatEndRef = useRef<HTMLDivElement>(null)
 
   const hourOptions = [
@@ -83,7 +86,7 @@ export default function ManseryeokPage() {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [chatMessages])
 
-  // 코인 조회
+  // 코인 + 저장된 채팅 조회
   useEffect(() => {
     if (!userId) return
     fetch("/api/data", {
@@ -91,7 +94,74 @@ export default function ManseryeokPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ action: "user.get" }),
     }).then(r => r.json()).then(d => setChatCoins(d.data?.coins || 0)).catch(() => {})
+
+    loadSavedChats()
   }, [userId])
+
+  const loadSavedChats = async () => {
+    try {
+      const res = await fetch("/api/data", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "msChat.list" }),
+      })
+      const data = await res.json()
+      setSavedChats(data.data || [])
+    } catch { /* ignore */ }
+  }
+
+  const saveChatToDb = async (msgs: ChatMsg[]) => {
+    try {
+      const res = await fetch("/api/data", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "msChat.save",
+          chatId: chatId || undefined,
+          birthDate, name,
+          analysis: analysis.slice(0, 500),
+          messages: msgs,
+        }),
+      })
+      const data = await res.json()
+      if (data.data?.id && !chatId) setChatId(data.data.id)
+    } catch { /* ignore */ }
+  }
+
+  const handleLoadChat = async (saved: Record<string, unknown>) => {
+    try {
+      const res = await fetch("/api/data", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "msChat.get", chatId: saved.id }),
+      })
+      const data = await res.json()
+      if (data.expired) { alert("보관 기간이 만료된 기록입니다."); return }
+      if (data.data) {
+        setChatMessages((data.data.messages || []) as ChatMsg[])
+        setChatId(data.data.id as string)
+        setAnalysis(data.data.analysis as string || "")
+        setBirthDate(data.data.birthDate as string || "")
+        setName(data.data.name as string || "")
+        setShowHistory(false)
+      }
+    } catch { /* ignore */ }
+  }
+
+  const handleExtendChat = async (id: string) => {
+    try {
+      const res = await fetch("/api/data", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "msChat.extend", chatId: id }),
+      })
+      const data = await res.json()
+      if (data.error) { alert(data.error); return }
+      setChatCoins(data.data?.coins ?? null)
+      loadSavedChats()
+      alert("영구 보관 완료!")
+    } catch { alert("오류가 발생했습니다") }
+  }
 
   const handleCalculate = () => {
     if (!birthDate) return
@@ -165,7 +235,10 @@ export default function ManseryeokPage() {
         }),
       })
       const data = await res.json()
-      setChatMessages((prev) => [...prev, { role: "ai", text: data.interpretation || "답변을 가져올 수 없습니다." }])
+      const newMsgs: ChatMsg[] = [...chatMessages, { role: "user", text: userMsg }, { role: "ai", text: data.interpretation || "답변을 가져올 수 없습니다." }]
+      setChatMessages(newMsgs)
+      // 자동 저장
+      saveChatToDb(newMsgs)
     } catch {
       setChatMessages((prev) => [...prev, { role: "ai", text: "⚠️ 답변 중 오류가 발생했습니다." }])
     } finally {
@@ -324,6 +397,59 @@ export default function ManseryeokPage() {
                   🔮
                 </button>
               </div>
+            </div>
+          )}
+
+          {/* 저장된 분석 기록 */}
+          <button onClick={() => { setShowHistory(!showHistory); if (!showHistory) loadSavedChats() }}
+            className="w-full py-3 bg-cemetery-card border border-cemetery-border rounded-2xl text-sm text-cemetery-ghost hover:text-cemetery-heading transition-colors">
+            📋 분석 기록 ({savedChats.length}건) {showHistory ? "▲" : "▼"}
+          </button>
+
+          {showHistory && savedChats.length > 0 && (
+            <div className="space-y-2 animate-fade-in">
+              {savedChats.map((chat) => {
+                const daysLeft = chat.daysLeft as number
+                const isExpiring = chat.isExpiring as boolean
+                const isPerm = daysLeft === -1
+                return (
+                  <div key={chat.id as string}
+                    className={"bg-cemetery-card border rounded-2xl p-4 " +
+                      (isExpiring ? "border-red-500/30" : "border-cemetery-border")}>
+                    <div className="flex items-center justify-between mb-2">
+                      <button onClick={() => handleLoadChat(chat)}
+                        className="text-left flex-1">
+                        <p className="text-sm text-cemetery-heading">
+                          {(chat.name as string) || "이름 미입력"} · {chat.birthDate as string}
+                        </p>
+                        <p className="text-[10px] text-cemetery-ghost/40">
+                          {((chat.messages as unknown[]) || []).length}개 대화 · {new Date(chat.createdAt as string).toLocaleDateString("ko-KR")}
+                        </p>
+                      </button>
+                      <div className="flex items-center gap-2">
+                        {isPerm ? (
+                          <span className="text-[10px] text-green-400">♾️ 영구</span>
+                        ) : (
+                          <span className={"text-[10px] " + (isExpiring ? "text-red-400" : "text-cemetery-ghost/40")}>
+                            {daysLeft}일 남음
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    {!isPerm && (
+                      <div className="flex gap-2">
+                        <button onClick={() => handleExtendChat(chat.id as string)}
+                          className={"flex-1 py-1.5 rounded-lg text-xs transition-colors cute-press " +
+                            (isExpiring
+                              ? "bg-red-500/20 border border-red-500/30 text-red-300"
+                              : "bg-cemetery-surface border border-cemetery-border text-cemetery-ghost hover:border-cemetery-accent")}>
+                          🪙 10코인으로 영구 보관
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
             </div>
           )}
         </>

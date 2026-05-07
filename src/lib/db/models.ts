@@ -13,6 +13,19 @@ const UserSchema = new Schema({
   securityAnswer: String,
 }, { timestamps: true })
 
+// 만세력 추가 질문 채팅 기록 (7일 무료 → 이후 10코인 보관 연장)
+const ManseryeokChatSchema = new Schema({
+  userId: { type: String, required: true, index: true },
+  birthDate: String,
+  name: String,
+  analysis: String, // 초기 분석 결과 요약
+  messages: [{ role: String, text: String }],
+  isPermanent: { type: Boolean, default: false }, // 영구 보관 여부
+  expiresAt: { type: Date, index: true }, // 7일 후 만료
+}, { timestamps: true })
+
+export const ManseryeokChat = mongoose.models.ManseryeokChat || mongoose.model("ManseryeokChat", ManseryeokChatSchema)
+
 // AI 분석 로그 (모든 AI 호출 자동 저장)
 const AiLogSchema = new Schema({
   userId: { type: String, index: true },
