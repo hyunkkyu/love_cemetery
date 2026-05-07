@@ -28,6 +28,14 @@ export async function POST(request: NextRequest) {
 오행: ${JSON.stringify(person.manseryeok?.elementBalance || {})}
 성격/MBTI: ${person.persona || "미입력"}
 카톡 스타일: ${person.chatStyle || "미입력"}
+${person.chatAnalysis ? `
+[카카오톡 대화 분석]
+총 메시지: ${person.chatAnalysis.totalMessages}개
+연애 온도: ${person.chatAnalysis.loveTemperature}°
+감정 점수: ${person.chatAnalysis.sentimentScore}/100
+인원별 메시지: ${JSON.stringify(person.chatAnalysis.messagesByPerson)}
+평균 응답시간: ${JSON.stringify(person.chatAnalysis.avgResponseTime)}
+주요 대화 주제: ${JSON.stringify(person.chatAnalysis.topTopics)}` : ""}
 
 [나의 사주]
 ${my.manseryeok?.summary || "정보 없음"}

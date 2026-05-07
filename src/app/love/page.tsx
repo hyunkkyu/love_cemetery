@@ -13,6 +13,8 @@ interface RecordData { id: string; crushName: string; comparedWith?: string; sco
 import { calculateManseryeok, calculateCompatibility } from "@/lib/manseryeok"
 import { DateInput } from "@/components/DateInput"
 import { PillarDisplay } from "@/components/PillarDisplay"
+import { parseKakaoFile, analyzeChat } from "@/lib/kakao-parser"
+import type { ChatAnalysis } from "@/types"
 
 interface CurrentPerson {
   nickname: string
@@ -34,6 +36,8 @@ export default function LovePage() {
     persona: "",
     chatStyle: "",
   })
+  const [chatFile, setChatFile] = useState<File | null>(null)
+  const [chatAnalysis, setChatAnalysis] = useState<ChatAnalysis | null>(null)
   const [graves, setGraves] = useState<Grave[]>([])
   const [crushes, setCrushes] = useState<CrushData[]>([])
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -81,8 +85,18 @@ export default function LovePage() {
     { value: "22", label: "해시 (21:30~23:30)" },
   ]
 
-  const handleAnalyze = () => {
+  const handleAnalyze = async () => {
     if (!person.birthDate || !myBirthDate) return
+
+    // 카톡 파일 파싱
+    if (chatFile) {
+      try {
+        const text = await chatFile.text()
+        const messages = parseKakaoFile(text, chatFile.name)
+        const analysis = analyzeChat(messages)
+        setChatAnalysis(analysis)
+      } catch { /* ignore */ }
+    }
 
     const [py, pm, pd] = person.birthDate.split("-").map(Number)
     const pHour = person.birthTime ? parseInt(person.birthTime) : 12
@@ -117,6 +131,14 @@ export default function LovePage() {
             persona: person.persona,
             chatStyle: person.chatStyle,
             manseryeok: result.personManseryeok,
+            chatAnalysis: chatAnalysis ? {
+              totalMessages: chatAnalysis.totalMessages,
+              loveTemperature: chatAnalysis.loveTemperature,
+              sentimentScore: chatAnalysis.sentimentScore,
+              topTopics: chatAnalysis.topTopics,
+              messagesByPerson: chatAnalysis.messagesByPerson,
+              avgResponseTime: chatAnalysis.avgResponseTime,
+            } : undefined,
           },
           my: { manseryeok: result.myManseryeok },
           compatibility: result.compatibility,
@@ -354,6 +376,31 @@ export default function LovePage() {
             />
           </div>
 
+          {/* 카카오톡 파일 업로드 */}
+          <div>
+            <label className="block text-xs text-pink-300/50 mb-1">💬 카카오톡 대화 파일 (선택)</label>
+            <input
+              type="file"
+              accept=".txt,.csv"
+              onChange={(e) => { setChatFile(e.target.files?.[0] || null); setChatAnalysis(null) }}
+              className="w-full px-3 py-2 rounded-xl love-input text-sm
+                file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0
+                file:bg-pink-500/20 file:text-pink-300 file:cursor-pointer file:text-xs"
+            />
+            <p className="text-[10px] text-pink-300/30 mt-1">
+              카톡 내보내기 .txt 파일을 첨부하면 대화 패턴까지 분석해요
+            </p>
+            {chatAnalysis && (
+              <div className="mt-2 bg-pink-500/5 rounded-xl p-3 space-y-1">
+                <p className="text-xs text-pink-300/60">✅ 분석 완료: {chatAnalysis.totalMessages.toLocaleString()}개 메시지</p>
+                <p className="text-[10px] text-pink-300/40">
+                  연애온도 {chatAnalysis.loveTemperature}° · 감정 {chatAnalysis.sentimentScore}%
+                  {chatAnalysis.topTopics?.length > 0 && ` · 주요 주제: ${chatAnalysis.topTopics.slice(0, 3).map(t => t.topic).join(", ")}`}
+                </p>
+              </div>
+            )}
+          </div>
+
           <div className="border-t border-pink-500/10 pt-4 space-y-3">
             <h3 className="text-sm" style={{ color: "#ffaad4" }}>나의 생년월일</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -445,6 +492,45 @@ export default function LovePage() {
                 <PillarDisplay result={result.personManseryeok} />
               </div>
             </div>
+
+            {/* 카톡 분석 결과 */}
+            {chatAnalysis && (
+              <div className="love-card border rounded-2xl p-5 space-y-3">
+                <h3 className="text-sm font-semibold" style={{ color: "#ffaad4" }}>💬 카카오톡 분석</h3>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  <div className="bg-pink-500/5 rounded-xl p-2 text-center">
+                    <p className="text-[10px] text-pink-300/40">총 메시지</p>
+                    <p className="text-sm font-bold text-pink-200">{chatAnalysis.totalMessages.toLocaleString()}</p>
+                  </div>
+                  <div className="bg-pink-500/5 rounded-xl p-2 text-center">
+                    <p className="text-[10px] text-pink-300/40">연애 온도</p>
+                    <p className="text-sm font-bold" style={{ color: chatAnalysis.loveTemperature > 70 ? "#ff8ec4" : chatAnalysis.loveTemperature > 40 ? "#ffe566" : "#7eecd0" }}>
+                      {chatAnalysis.loveTemperature}°
+                    </p>
+                  </div>
+                  <div className="bg-pink-500/5 rounded-xl p-2 text-center">
+                    <p className="text-[10px] text-pink-300/40">감정 점수</p>
+                    <p className="text-sm font-bold text-pink-200">{chatAnalysis.sentimentScore}%</p>
+                  </div>
+                  <div className="bg-pink-500/5 rounded-xl p-2 text-center">
+                    <p className="text-[10px] text-pink-300/40">활동 시간</p>
+                    <p className="text-sm font-bold text-pink-200">{chatAnalysis.mostActiveHour}시</p>
+                  </div>
+                </div>
+                {chatAnalysis.topTopics?.length > 0 && (
+                  <div className="space-y-1">
+                    <p className="text-[10px] text-pink-300/40">자주 나눈 대화 주제</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {chatAnalysis.topTopics.slice(0, 6).map((t) => (
+                        <span key={t.topic} className="px-2 py-0.5 text-[10px] bg-pink-500/10 text-pink-300/60 rounded-full">
+                          {t.emoji} {t.topic} {t.percentage}%
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* 과거 연애와 비교 */}
             {graves.length > 0 && (
