@@ -101,7 +101,7 @@ export default function GraveDetailPage({ params }: { params: Promise<{ id: stri
   return (
     <div className="space-y-8">
       {/* 묘비 헤더 + 드래그 아이템 영역 */}
-      <div className="relative bg-cemetery-card border-2 border-cemetery-border/60 rounded-2xl overflow-hidden">
+      <div className="relative bg-cemetery-card border-2 border-cemetery-border/60 rounded-2xl overflow-visible">
         {/* 편집 버튼 */}
         <button
           onClick={() => setEditing(true)}
@@ -111,13 +111,8 @@ export default function GraveDetailPage({ params }: { params: Promise<{ id: stri
           ✏️ 편집
         </button>
 
-        {/* 드래그 가능한 아이템 레이어 */}
-        <div className="absolute inset-0 z-20">
-          <DraggableItems graveId={grave.id} />
-        </div>
-
         {/* 묘비 콘텐츠 */}
-        <div className="relative z-10 text-center py-10 pointer-events-none">
+        <div className="relative z-10 text-center py-10">
           <div className="candle-glow inline-block text-2xl mb-4">🕯️</div>
 
           {grave.photo ? (
@@ -153,6 +148,13 @@ export default function GraveDetailPage({ params }: { params: Promise<{ id: stri
           <p className="text-cemetery-ghost/30 mt-2 text-[10px]">
             아이템을 드래그해서 원하는 곳에 배치하세요
           </p>
+        </div>
+
+        {/* 드래그 아이템 (묘비 위에 겹침) */}
+        <div className="absolute inset-0 z-20 pointer-events-none">
+          <div className="pointer-events-auto w-full h-full">
+            <DraggableItems graveId={grave.id} />
+          </div>
         </div>
       </div>
 

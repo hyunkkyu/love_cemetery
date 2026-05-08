@@ -42,7 +42,7 @@ export function DraggableItems({ graveId }: { graveId: string }) {
     }).catch(() => {})
   }, [userId, graveId])
 
-  if (!userId || equipped.length === 0) return null
+  if (!userId || equipped.length === 0) return <div className="pointer-events-none" />
 
   const save = () => {
     dbUser.savePositions(userId, graveId, posRef.current).catch(() => {})
@@ -132,9 +132,10 @@ export function DraggableItems({ graveId }: { graveId: string }) {
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className={"transition-all " +
+            {/* 클릭 영역 확대 (최소 40x40) */}
+            <div className={"transition-all min-w-[40px] min-h-[40px] flex items-center justify-center " +
               (isDragging ? "drop-shadow-[0_0_10px_rgba(107,92,231,0.5)]" : "") +
-              (isSelected && !isDragging ? " ring-2 ring-cemetery-accent rounded-lg p-0.5" : "")}>
+              (isSelected && !isDragging ? " ring-2 ring-cemetery-accent rounded-lg p-1" : "")}>
               <PixelArt grid={pixelGrid} scale={itemScale} animated={isDragging} />
             </div>
 
@@ -148,15 +149,15 @@ export function DraggableItems({ graveId }: { graveId: string }) {
               >
                 <button
                   onClick={() => handleResize(pos.itemId, -1)}
-                  className="w-7 h-7 bg-cemetery-card border border-cemetery-border rounded-full text-sm text-cemetery-ghost
+                  className="w-9 h-9 bg-cemetery-card border border-cemetery-border rounded-full text-base text-cemetery-ghost
                     hover:text-cemetery-heading hover:border-cemetery-accent transition-colors flex items-center justify-center"
                 >
                   −
                 </button>
-                <span className="text-[10px] text-cemetery-ghost/50 w-5 text-center">{itemScale}</span>
+                <span className="text-xs text-cemetery-ghost/50 w-6 text-center">{itemScale}</span>
                 <button
                   onClick={() => handleResize(pos.itemId, 1)}
-                  className="w-7 h-7 bg-cemetery-card border border-cemetery-border rounded-full text-sm text-cemetery-ghost
+                  className="w-9 h-9 bg-cemetery-card border border-cemetery-border rounded-full text-base text-cemetery-ghost
                     hover:text-cemetery-heading hover:border-cemetery-accent transition-colors flex items-center justify-center"
                 >
                   +
