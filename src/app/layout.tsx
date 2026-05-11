@@ -61,7 +61,7 @@ export default function RootLayout({
           {/* 메인 콘텐츠 */}
           <div className="relative z-10">
             <NavBar />
-            <main className="max-w-6xl mx-auto px-4 py-8">
+            <main className="max-w-6xl mx-auto px-4 py-8 pb-20 lg:pb-8">
               {children}
             </main>
           </div>

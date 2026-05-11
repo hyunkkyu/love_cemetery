@@ -487,11 +487,18 @@ export default function ManseryeokPage() {
 /** 분석 결과를 섹션별로 분리하여 접기/펼치기 가능하게 */
 function AnalysisResult({ analysis, onReanalyze }: { analysis: string; onReanalyze: () => void }) {
   const [collapsed, setCollapsed] = useState(false)
-  const [expandedSections, setExpandedSections] = useState<Set<number>>(new Set())
 
   // 분석 텍스트를 **소제목** 기준으로 섹션 분리
   const sections = parseSections(analysis)
   const hasMultiple = sections.length > 1
+
+  // 기본값: "교차검증 종합 결론" 섹션만 펼침
+  const [expandedSections, setExpandedSections] = useState<Set<number>>(() => {
+    const conclusionIdx = sections.findIndex((s) =>
+      s.title.includes("교차검증") || s.title.includes("종합 결론") || s.title.includes("종합")
+    )
+    return new Set(conclusionIdx >= 0 ? [conclusionIdx] : sections.length > 0 ? [sections.length - 1] : [])
+  })
 
   const toggleSection = (idx: number) => {
     setExpandedSections((prev) => {
@@ -538,9 +545,16 @@ function AnalysisResult({ analysis, onReanalyze }: { analysis: string; onReanaly
                 return (
                   <div key={i} className="border border-cemetery-border/30 rounded-xl overflow-hidden">
                     <button onClick={() => toggleSection(i)}
-                      className="w-full px-4 py-2.5 flex items-center justify-between text-left bg-cemetery-surface/30 hover:bg-cemetery-surface/50 transition-colors">
-                      <span className="text-sm font-semibold text-cemetery-heading">{section.title}</span>
-                      <span className="text-[10px] text-cemetery-ghost/40">{isOpen ? "▲" : "▼"}</span>
+                      className="w-full px-4 py-2.5 flex items-center justify-between text-left bg-cemetery-surface/30 hover:bg-cemetery-surface/50 transition-colors gap-2">
+                      <div className="flex-1 min-w-0">
+                        <span className="text-sm font-semibold text-cemetery-heading">{section.title}</span>
+                        {!isOpen && (
+                          <span className="block text-xs text-cemetery-ghost/30 truncate mt-0.5">
+                            {section.content.replace(/\n/g, " ").slice(0, 50)}...
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-xs text-cemetery-ghost/40 flex-shrink-0">{isOpen ? "▲" : "▼"}</span>
                     </button>
                     {isOpen && (
                       <div className="px-4 py-3 text-sm text-cemetery-text whitespace-pre-wrap leading-relaxed animate-fade-in">

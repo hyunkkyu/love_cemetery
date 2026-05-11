@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react"
 import { useSession, signOut } from "next-auth/react"
-import { useRouter } from "next/navigation"
+import { useRouter, usePathname } from "next/navigation"
 
 interface NavGroup {
   label: string
@@ -42,28 +42,36 @@ const QUICK_LINKS = [
   { href: "/notice", label: "📢" },
 ]
 
-// 모바일용 전체 링크
+// 모바일용 전체 링크 (부제 추가)
 const ALL_LINKS = [
-  { href: "/grave", label: "🪦 묘지 관리" },
-  { href: "/manseryeok", label: "🔮 운명 분석" },
-  { href: "/love", label: "💘 살랑살랑" },
-  { href: "/ssum", label: "💔 썸붕 분석" },
-  { href: "/compare", label: "⚖️ 비교 분석" },
-  { href: "/counsel", label: "🧙 상담" },
-  { href: "/partner", label: "💀 동반자" },
-  { href: "/community", label: "👻 커뮤니티" },
-  { href: "/stats", label: "📊 통계" },
-  { href: "/shop", label: "🛒 상점" },
-  { href: "/invite", label: "🎁 초대" },
-  { href: "/notice", label: "📢 공지" },
+  { href: "/grave", label: "🪦 묘비 등록", sub: "과거 연애 묻기" },
+  { href: "/manseryeok", label: "🔮 운명 분석", sub: "사주/점성 교차검증" },
+  { href: "/love", label: "💘 살랑살랑", sub: "현재 썸 궁합" },
+  { href: "/ssum", label: "💔 썸붕 분석", sub: "썸 깨진 이유" },
+  { href: "/compare", label: "⚖️ 비교 분석", sub: "묘비 둘 비교" },
+  { href: "/counsel", label: "🧙 AI 상담", sub: "하루 3회 무료" },
+  { href: "/partner", label: "💀 동반자", sub: "서로 묘비 열람" },
+  { href: "/community", label: "👻 커뮤니티", sub: "연애토크" },
+  { href: "/stats", label: "📊 통계", sub: "랭킹/MBTI" },
+  { href: "/shop", label: "🛒 상점", sub: "아이템 구매" },
+  { href: "/invite", label: "🎁 초대", sub: "+200코인" },
+  { href: "/notice", label: "📢 공지", sub: "업데이트" },
 ]
 
 export function NavBar() {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const pathname = usePathname()
   const [menuOpen, setMenuOpen] = useState(false)
   const [openGroup, setOpenGroup] = useState<string | null>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
+
+  const BOTTOM_TABS = [
+    { href: "/", icon: "\u{1F3E0}", label: "\uD648" },
+    { href: "/grave", icon: "\u{1FAA6}", label: "\uBB18\uBE44" },
+    { href: "/manseryeok", icon: "\u{1F52E}", label: "\uBD84\uC11D" },
+    { href: null, icon: "\u2022\u2022\u2022", label: "\uB354\uBCF4\uAE30" },
+  ] as const
 
   // 바깥 클릭 시 드롭다운 닫기
   useEffect(() => {
@@ -122,31 +130,59 @@ export function NavBar() {
           <AuthButton session={session} status={status} router={router} />
         </div>
 
-        {/* 모바일 */}
+        {/* 모바일: 햄버거 제거, AuthButton만 표시 */}
         <div className="lg:hidden flex items-center gap-3">
           <AuthButton session={session} status={status} router={router} />
-          <button onClick={() => setMenuOpen(!menuOpen)}
-            className="w-9 h-9 flex flex-col items-center justify-center gap-1.5 rounded-lg bg-cemetery-card border border-cemetery-border">
-            <span className={"block w-4 h-0.5 bg-cemetery-ghost transition-all " + (menuOpen ? "rotate-45 translate-y-1" : "")} />
-            <span className={"block w-4 h-0.5 bg-cemetery-ghost transition-all " + (menuOpen ? "opacity-0" : "")} />
-            <span className={"block w-4 h-0.5 bg-cemetery-ghost transition-all " + (menuOpen ? "-rotate-45 -translate-y-1" : "")} />
-          </button>
         </div>
       </div>
 
-      {/* 모바일 드롭다운 */}
+      {/* 모바일 더보기 드롭다운 (바텀 탭 위에 표시) */}
       {menuOpen && (
-        <div className="lg:hidden border-t border-cemetery-border bg-cemetery-surface/95 backdrop-blur-sm animate-fade-in">
+        <div className="lg:hidden fixed bottom-16 left-0 right-0 z-50 border-t border-cemetery-border bg-cemetery-surface/95 backdrop-blur-sm animate-fade-in">
           <div className="max-w-6xl mx-auto px-4 py-3 grid grid-cols-3 gap-2">
             {ALL_LINKS.map((link) => (
               <a key={link.href} href={link.href} onClick={() => setMenuOpen(false)}
-                className="block px-2 py-2.5 rounded-xl text-xs text-center text-cemetery-text bg-cemetery-card hover:bg-cemetery-card/80 transition-colors">
-                {link.label}
+                className="block px-2 py-2.5 rounded-xl text-center text-cemetery-text bg-cemetery-card hover:bg-cemetery-card/80 transition-colors">
+                <span className="block text-xs font-medium">{link.label}</span>
+                <span className="block text-[10px] text-cemetery-ghost/40 mt-0.5">{link.sub}</span>
               </a>
             ))}
           </div>
         </div>
       )}
+
+      {/* 모바일 바텀 탭 바 */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-cemetery-surface/95 backdrop-blur-sm border-t border-cemetery-border">
+        <div className="flex items-center justify-around py-2 pb-[env(safe-area-inset-bottom)]">
+          {BOTTOM_TABS.map((tab) => {
+            const isMore = tab.href === null
+            const isActive = isMore
+              ? menuOpen
+              : pathname === tab.href
+
+            return (
+              <button
+                key={tab.label}
+                onClick={() => {
+                  if (isMore) {
+                    setMenuOpen((prev) => !prev)
+                  } else {
+                    setMenuOpen(false)
+                    router.push(tab.href as string)
+                  }
+                }}
+                className={
+                  "flex flex-col items-center justify-center gap-0.5 flex-1 py-1 transition-colors " +
+                  (isActive ? "text-cemetery-accent" : "text-cemetery-ghost/50")
+                }
+              >
+                <span className="text-lg leading-none">{tab.icon}</span>
+                <span className="text-[10px] leading-none">{tab.label}</span>
+              </button>
+            )
+          })}
+        </div>
+      </div>
     </nav>
   )
 }
