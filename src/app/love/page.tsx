@@ -12,6 +12,7 @@ interface CrushData { id: string; nickname: string; birthDate: string; birthTime
 interface RecordData { id: string; crushName: string; comparedWith?: string; score: number; aiAdvice: string; createdAt: string }
 import { calculateManseryeok, calculateCompatibility } from "@/lib/manseryeok"
 import { DateInput } from "@/components/DateInput"
+import { GenderSelect } from "@/components/GenderSelect"
 import { PillarDisplay } from "@/components/PillarDisplay"
 import { parseKakaoFile, analyzeChat } from "@/lib/kakao-parser"
 import type { ChatAnalysis } from "@/types"
@@ -42,8 +43,10 @@ export default function LovePage() {
   const [crushes, setCrushes] = useState<CrushData[]>([])
   const [editingId, setEditingId] = useState<string | null>(null)
   const [selectedGrave, setSelectedGrave] = useState<Grave | null>(null)
+  const [personGender, setPersonGender] = useState("")
   const [myBirthDate, setMyBirthDate] = useState("")
   const [myBirthTime, setMyBirthTime] = useState("")
+  const [myGender, setMyGender] = useState("")
   const [result, setResult] = useState<{
     personManseryeok: ReturnType<typeof calculateManseryeok>
     myManseryeok: ReturnType<typeof calculateManseryeok>
@@ -331,7 +334,8 @@ export default function LovePage() {
               />
             </div>
             <div>
-              <label className="block text-xs text-pink-200/70 mb-1">생년월일 *</label>
+              <label className="block text-xs text-pink-200/70 mb-1">성별 + 생년월일 *</label>
+              <GenderSelect value={personGender} onChange={setPersonGender} />
               <DateInput
                 value={person.birthDate}
                 onChange={(v) => update("birthDate", v)}
@@ -402,7 +406,8 @@ export default function LovePage() {
           </div>
 
           <div className="border-t border-pink-500/10 pt-4 space-y-3">
-            <h3 className="text-sm" style={{ color: "#ffaad4" }}>나의 생년월일</h3>
+            <h3 className="text-sm" style={{ color: "#ffaad4" }}>나의 성별 + 생년월일</h3>
+            <GenderSelect value={myGender} onChange={setMyGender} />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <DateInput
                 value={myBirthDate}

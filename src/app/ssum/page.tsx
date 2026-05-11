@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation"
 import { dbSsum } from "@/lib/ssum-client"
 import { calculateManseryeok, calculateCompatibility } from "@/lib/manseryeok"
 import { DateInput } from "@/components/DateInput"
+import { GenderSelect } from "@/components/GenderSelect"
 
 const SSUM_QUOTES = [
   "좋아하는 감정은 틀린 게 아니다. 타이밍이 안 맞았을 뿐.",
@@ -208,7 +209,8 @@ export default function SsumPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs text-cemetery-ghost/50 mb-1">상대 생년월일</label>
+              <label className="block text-xs text-cemetery-ghost/50 mb-1">상대 성별 + 생년월일</label>
+              <GenderSelect value={(form as Record<string, string>).gender || ""} onChange={(v) => update("gender", v)} className="mb-2" />
               <DateInput value={form.birthDate} onChange={(v) => update("birthDate", v)} />
             </div>
             <div>
@@ -222,7 +224,8 @@ export default function SsumPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs text-cemetery-ghost/50 mb-1">나의 생년월일</label>
+              <label className="block text-xs text-cemetery-ghost/50 mb-1">나의 성별 + 생년월일</label>
+              <GenderSelect value={(form as Record<string, string>).myGender || ""} onChange={(v) => update("myGender", v)} className="mb-2" />
               <DateInput value={form.myBirthDate} onChange={(v) => update("myBirthDate", v)} />
             </div>
             <div>

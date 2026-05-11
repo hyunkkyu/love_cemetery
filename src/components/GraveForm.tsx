@@ -6,6 +6,7 @@ import { GRAVE_GRADES } from "@/types"
 import { parseKakaoFile, analyzeChat } from "@/lib/kakao-parser"
 import { calculateManseryeok, calculateCompatibility } from "@/lib/manseryeok"
 import { DateInput } from "@/components/DateInput"
+import { GenderSelect } from "@/components/GenderSelect"
 
 interface GraveFormProps {
   onSave: (grave: Grave) => void | Promise<void>
@@ -18,8 +19,10 @@ export function GraveForm({ onSave, initial }: GraveFormProps) {
     grade: (initial?.grade || "public") as GraveGrade,
     birthDate: initial?.birthDate || "",
     birthTime: initial?.birthTime || "",
+    gender: (initial as Record<string, unknown>)?.gender as string || "",
     myBirthDate: initial?.myBirthDate || "",
     myBirthTime: initial?.myBirthTime || "",
+    myGender: (initial as Record<string, unknown>)?.myGender as string || "",
     relationshipStart: initial?.relationshipStart || "",
     relationshipEnd: initial?.relationshipEnd || "",
     causeOfDeath: initial?.causeOfDeath || "",
@@ -258,6 +261,7 @@ export function GraveForm({ onSave, initial }: GraveFormProps) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <fieldset className="space-y-2 border border-cemetery-border/50 rounded-lg p-4">
           <legend className="text-sm text-cemetery-ghost px-2">상대방 생년월일시</legend>
+          <GenderSelect value={form.gender} onChange={(v) => update("gender", v)} />
           <DateInput
             value={form.birthDate}
             onChange={(v) => update("birthDate", v)}
@@ -276,6 +280,7 @@ export function GraveForm({ onSave, initial }: GraveFormProps) {
         </fieldset>
         <fieldset className="space-y-2 border border-cemetery-border/50 rounded-lg p-4">
           <legend className="text-sm text-cemetery-ghost px-2">나의 생년월일시</legend>
+          <GenderSelect value={form.myGender} onChange={(v) => update("myGender", v)} />
           <DateInput
             value={form.myBirthDate}
             onChange={(v) => update("myBirthDate", v)}

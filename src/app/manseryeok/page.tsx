@@ -6,6 +6,7 @@ import type { ManseryeokResult } from "@/types"
 import { calculateManseryeok } from "@/lib/manseryeok"
 import { PillarDisplay } from "@/components/PillarDisplay"
 import { DateInput } from "@/components/DateInput"
+import { GenderSelect } from "@/components/GenderSelect"
 
 const ANALYSIS_CATEGORIES = [
   { id: "love", label: "💘 연애/결혼운", desc: "연애 성향, 이상형, 결혼 시기" },
@@ -45,6 +46,7 @@ export default function ManseryeokPage() {
 
   const [birthDate, setBirthDate] = useState("")
   const [birthTime, setBirthTime] = useState("")
+  const [gender, setGender] = useState("")
   const [name, setName] = useState("")
   const [result, setResult] = useState<ManseryeokResult | null>(null)
   const [selectedCategory, setSelectedCategory] = useState("")
@@ -180,7 +182,7 @@ export default function ManseryeokPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          manseryeok: result, birthDate,
+          manseryeok: result, birthDate, gender,
           name: name || undefined,
           category: selectedCategory || undefined,
           question: customQuestion || undefined,
@@ -232,7 +234,7 @@ export default function ManseryeokPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          manseryeok: result, birthDate,
+          manseryeok: result, birthDate, gender,
           name: name || undefined,
           question: `[이전 분석 결과 요약]\n${analysis.slice(0, 500)}\n\n${historyText ? "[이전 대화]\n" + historyText + "\n\n" : ""}[추가 질문]\n${userMsg}\n\n위 맥락을 이어서 답변해주세요. 600자 이내로 핵심만.`,
         }),
@@ -267,6 +269,11 @@ export default function ManseryeokPage() {
             placeholder="수리성명학 분석에 사용됩니다"
             className="w-full px-3 py-2.5 bg-cemetery-surface border border-cemetery-border rounded-lg text-cemetery-text placeholder-cemetery-ghost/30 text-sm focus:border-cemetery-accent focus:outline-none" />
         </div>
+        <div>
+          <label className="block text-xs text-cemetery-ghost/50 mb-1">성별 *</label>
+          <GenderSelect value={gender} onChange={setGender} />
+        </div>
+
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label className="block text-xs text-cemetery-ghost/50 mb-1">생년월일 *</label>

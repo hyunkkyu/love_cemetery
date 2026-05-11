@@ -14,7 +14,8 @@ export async function POST(request: NextRequest) {
     const { checkRateLimit } = await import("@/lib/rate-limit")
     if (!checkRateLimit(uid, 5, 60000)) return NextResponse.json({ interpretation: "⚠️ 너무 많은 요청입니다. 1분 후 다시 시도해주세요." }, { status: 429 })
     const body = await request.json()
-    const { manseryeok, birthDate, name, category, question } = body
+    const { manseryeok, birthDate, gender, name, category, question } = body
+    const genderLabel = gender === "M" ? "남성" : gender === "F" ? "여성" : "미입력"
 
     // 생년월일에서 수비학/점성학 정보 추출
     const [year, month, day] = (birthDate || "").split("-").map(Number)
@@ -41,7 +42,12 @@ export async function POST(request: NextRequest) {
 
 [기본 정보]
 ${name ? `이름: ${name}` : ""}
+성별: ${genderLabel}
 생년월일: ${birthDate || "미입력"}
+
+[성별 기반 분석 필수]
+- 대운 순행/역행: ${gender === "M" ? "남자" : gender === "F" ? "여자" : "성별 미입력"} → 연주 천간이 양간이면 ${gender === "M" ? "순행" : "역행"}, 음간이면 ${gender === "M" ? "역행" : "순행"}
+- 십성 연애 해석: ${gender === "M" ? "재성(財星)=아내/여자친구, 관성(官星)=직장/권위" : gender === "F" ? "관성(官星)=남편/남자친구, 재성(財星)=재물/시어머니" : "성별에 따라 다르므로 양쪽 다 설명"}
 
 [1. 사주명리학 데이터]
 ${manseryeok?.summary || "데이터 없음"}
