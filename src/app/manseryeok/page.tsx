@@ -192,6 +192,9 @@ export default function ManseryeokPage() {
       if (!res.ok) { setAnalysis("분석 서버 오류. 다시 시도해주세요."); return }
       const data = await res.json()
       setAnalysis(data.interpretation || "분석 결과를 가져올 수 없습니다.")
+      // 새 분석이므로 채팅 리셋
+      setChatMessages([])
+      setChatId(null)
     } catch {
       setAnalysis("분석을 가져오는 데 실패했습니다.")
     } finally {
@@ -412,13 +415,18 @@ export default function ManseryeokPage() {
             </div>
           )}
 
-          {/* 저장된 분석 기록 */}
+        </>
+      )}
+
+      {/* 저장된 분석 기록 (사주 계산 전에도 표시) */}
+      {savedChats.length > 0 && (
+        <>
           <button onClick={() => { setShowHistory(!showHistory); if (!showHistory) loadSavedChats() }}
             className="w-full py-3 bg-cemetery-card border border-cemetery-border rounded-2xl text-sm text-cemetery-ghost hover:text-cemetery-heading transition-colors">
             📋 분석 기록 ({savedChats.length}건) {showHistory ? "▲" : "▼"}
           </button>
 
-          {showHistory && savedChats.length > 0 && (
+          {showHistory && (
             <div className="space-y-2 animate-fade-in">
               {savedChats.map((chat) => {
                 const daysLeft = chat.daysLeft as number
