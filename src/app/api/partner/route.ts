@@ -144,7 +144,10 @@ export async function POST(request: NextRequest) {
           status: "accepted",
         })
         if (!relation) return NextResponse.json({ error: "동반자 관계가 아닙니다" }, { status: 403 })
-        const graves = await Grave.find({ userId: partnerId }).sort({ createdAt: -1 }).lean()
+        const graves = await Grave.find(
+          { userId: partnerId },
+          { nickname: 1, grade: 1, epitaph: 1, causeOfDeath: 1, graveReason: 1, relationshipStart: 1, relationshipEnd: 1, compatibility: 1, createdAt: 1 }
+        ).sort({ createdAt: -1 }).lean()
         return NextResponse.json({ data: graves.map(serialize) })
       }
 
@@ -246,7 +249,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "Unknown action" }, { status: 400 })
     }
   } catch (error) {
-    const msg = error instanceof Error ? error.message : "서버 오류"
+    const msg = "서버 오류가 발생했습니다"
     return NextResponse.json({ error: msg }, { status: 500 })
   }
 }

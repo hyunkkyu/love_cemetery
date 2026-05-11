@@ -137,9 +137,11 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ data: true })
       }
       case "user.savePositions": {
+        const safeGraveId = String(payload.graveId || "").replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 50)
+        if (!safeGraveId) return NextResponse.json({ error: "Invalid graveId" }, { status: 400 })
         await UserData.updateOne(
           { userId },
-          { $set: { [`itemPositions.${payload.graveId}`]: payload.positions } },
+          { $set: { [`itemPositions.${safeGraveId}`]: payload.positions } },
           { upsert: true }
         )
         return NextResponse.json({ data: true })

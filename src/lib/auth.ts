@@ -15,7 +15,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const password = credentials?.password
 
         if (typeof nickname !== "string" || typeof password !== "string") return null
-        if (!nickname || !password || password.length < 4) return null
+        if (!nickname || !password || password.length < 8) return null
 
         try {
           const mongoose = (await import("mongoose")).default

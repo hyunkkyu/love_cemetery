@@ -8,9 +8,6 @@ const UserSchema = new Schema({
   userId: { type: String, required: true, unique: true },
   resetToken: String,
   resetTokenExpiry: Date,
-  // 하위 호환용 (기존)
-  securityQuestion: String,
-  securityAnswer: String,
 }, { timestamps: true })
 
 // 만세력 추가 질문 채팅 기록 (7일 무료 → 이후 10코인 보관 연장)

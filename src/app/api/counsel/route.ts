@@ -163,7 +163,7 @@ ${question}
         return NextResponse.json({ error: "Unknown action" }, { status: 400 })
     }
   } catch (error) {
-    const msg = error instanceof Error ? error.message : "서버 오류"
+    const msg = "서버 오류가 발생했습니다"
     return NextResponse.json({ error: msg }, { status: 500 })
   }
 }

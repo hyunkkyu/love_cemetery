@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
 
         const data = ranking.map((r, i) => ({
           rank: i + 1,
-          userId: r._id,
+          // userId 제거 (개인정보 보호)
           nickname: nicknameMap[r._id] || "익명 유저",
           graveCount: r.count,
         }))
@@ -289,7 +289,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: `Unknown action: ${action}` }, { status: 400 })
     }
   } catch (error) {
-    const msg = error instanceof Error ? error.message : "서버 오류"
+    const msg = "서버 오류가 발생했습니다"
     return NextResponse.json({ error: msg }, { status: 500 })
   }
 }

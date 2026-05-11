@@ -79,15 +79,16 @@ export async function POST(request: NextRequest) {
           return NextResponse.json({ data: { sent: true } })
         }
 
-        // 리셋 토큰 생성 (1시간 유효)
+        // 리셋 토큰 생성 (1시간 유효) - 해시화하여 DB 저장
         const resetToken = crypto.randomBytes(32).toString("hex")
+        const hashedToken = crypto.createHash("sha256").update(resetToken).digest("hex")
         const resetTokenExpiry = new Date(Date.now() + 60 * 60 * 1000)
 
-        user.resetToken = resetToken
+        user.resetToken = hashedToken // 해시된 값만 DB에 저장
         user.resetTokenExpiry = resetTokenExpiry
         await user.save()
 
-        // 이메일 발송
+        // 이메일에는 원본 토큰 발송
         const appUrl = process.env.APP_URL || "https://love-cemetery.vercel.app"
         const resetLink = appUrl + "/reset-password?token=" + resetToken
 
@@ -105,8 +106,9 @@ export async function POST(request: NextRequest) {
       // 토큰 검증
       case "forgotPassword.verifyToken": {
         const token = String(body.token || "")
+        const hashedToken = crypto.createHash("sha256").update(token).digest("hex")
         const user = await User.findOne({
-          resetToken: token,
+          resetToken: hashedToken,
           resetTokenExpiry: { $gt: new Date() },
         })
         if (!user) {
@@ -124,8 +126,9 @@ export async function POST(request: NextRequest) {
           return NextResponse.json({ error: "비밀번호: 8자 이상, 영문+숫자 포함" }, { status: 400 })
         }
 
+        const hashedResetToken = crypto.createHash("sha256").update(token).digest("hex")
         const user = await User.findOne({
-          resetToken: token,
+          resetToken: hashedResetToken,
           resetTokenExpiry: { $gt: new Date() },
         })
         if (!user) {
