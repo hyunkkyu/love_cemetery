@@ -27,6 +27,21 @@ const TYPE_STYLE: Record<string, { label: string; color: string; bg: string }> =
  */
 const NOTICES: Notice[] = [
   {
+    version: "2.4.0",
+    date: "2026-05-11",
+    title: "성별 추가 & 보안 강화 & 날짜 입력 개선",
+    type: "feature",
+    items: [
+      "♂♀ 성별 선택 추가: 만세력/묘비/살랑살랑/썸붕 모든 곳에 성별 입력",
+      "🔮 대운 순행/역행 성별 반영: 남녀에 따라 대운 방향 정확하게 계산",
+      "💕 십성 연애 해석: 남자의 재성=아내, 여자의 관성=남편으로 정확 해석",
+      "🔐 보안 패치: NEXTAUTH_SECRET 강화, 리셋 토큰 해시화, 보안 헤더 추가",
+      "🛡️ NoSQL 인젝션 방지, 에러 메시지 정보 노출 차단",
+      "📅 날짜 입력 개선: 숫자만 입력 → 자동 YYYY-MM-DD 포맷",
+      "🔒 미등록 유저 로그인 차단: 회원가입 필수",
+    ],
+  },
+  {
     version: "2.3.0",
     date: "2026-05-11",
     title: "가독성 대폭 개선 & 글씨 크기 조절 & 팩폭 강화",
