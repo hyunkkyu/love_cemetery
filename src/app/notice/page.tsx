@@ -27,6 +27,21 @@ const TYPE_STYLE: Record<string, { label: string; color: string; bg: string }> =
  */
 const NOTICES: Notice[] = [
   {
+    version: "2.3.0",
+    date: "2026-05-11",
+    title: "가독성 대폭 개선 & 글씨 크기 조절 & 팩폭 강화",
+    type: "improve",
+    items: [
+      "👁️ 전체 가독성 개선: 배경 더 어둡게, 텍스트 더 밝게, 줄간격 확대",
+      "🔤 글씨 크기 조절: 우측 하단 '가' 버튼 → 4단계 (작게~아주크게)",
+      "💔 팩폭 강도 차별화: 각 레벨별 구체적 예시 톤 + 비율 안내",
+      "💘 살랑살랑 shimmer 제거: 깜빡임으로 인한 가독성 저하 해결",
+      "💬 살랑살랑 카톡 첨부: 카카오톡 파일 업로드 + AI 분석 반영",
+      "📱 PWA + Capacitor: 홈 화면 추가로 앱처럼 사용 가능",
+      "👤 마이페이지: 코인 내역 + 개인 통계 + 랭킹",
+    ],
+  },
+  {
     version: "2.2.0",
     date: "2026-05-07",
     title: "보안 강화 & 향피우기 & 애니메이션",
@@ -209,7 +224,7 @@ export default function NoticePage() {
     <div className="max-w-2xl mx-auto space-y-6">
       <div className="text-center space-y-2">
         <h1 className="font-gothic text-3xl font-bold text-cemetery-heading">📢 공지사항</h1>
-        <p className="text-xs text-cemetery-ghost/40">명예의전당 기능 업데이트 및 변경 이력</p>
+        <p className="text-xs text-cemetery-ghost/70">명예의전당 기능 업데이트 및 변경 이력</p>
       </div>
 
       {/* 튜토리얼 다시 보기 */}
@@ -256,15 +271,15 @@ export default function NoticePage() {
                   </span>
                   <div>
                     <p className="text-sm font-semibold text-cemetery-heading">{notice.title}</p>
-                    <p className="text-[10px] text-cemetery-ghost/30">v{notice.version} · {notice.date}</p>
+                    <p className="text-[10px] text-cemetery-ghost/70">v{notice.version} · {notice.date}</p>
                   </div>
                 </div>
-                <span className="text-cemetery-ghost/30 text-xs">{isOpen ? "▲" : "▼"}</span>
+                <span className="text-cemetery-ghost/70 text-xs">{isOpen ? "▲" : "▼"}</span>
               </button>
               {isOpen && (
                 <div className="px-5 pb-4 border-t border-cemetery-border/30 pt-3 space-y-1.5 animate-fade-in">
                   {notice.items.map((item, i) => (
-                    <p key={i} className="text-xs text-cemetery-ghost/70 leading-relaxed">{item}</p>
+                    <p key={i} className="text-xs text-cemetery-text/90 leading-relaxed">{item}</p>
                   ))}
                 </div>
               )}
@@ -282,7 +297,7 @@ function GuideItem({ href, icon, title, desc }: { href: string; icon: string; ti
       <span className="text-lg">{icon}</span>
       <div>
         <p className="text-cemetery-heading font-semibold">{title}</p>
-        <p className="text-[10px] text-cemetery-ghost/40">{desc}</p>
+        <p className="text-[10px] text-cemetery-ghost/70">{desc}</p>
       </div>
     </a>
   )

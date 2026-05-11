@@ -411,11 +411,12 @@ export default function SsumPage() {
                           style={{
                             background: "linear-gradient(to right, #7eecd0 0%, #e0e0f0 50%, #ff4466 100%)",
                           }} />
-                        <p className="text-[10px] text-cemetery-ghost/30 text-center">
-                          {factLevel <= 2 ? "위로 위주, 팩트는 완곡하게"
-                            : factLevel === 3 ? "공감 50% + 팩트 50%"
-                            : factLevel === 4 ? "꽤 직설적, 듣기 싫은 말도"
-                            : "친구가 술자리에서 하는 수준의 팩폭"}
+                        <p className="text-[10px] text-cemetery-ghost/50 text-center">
+                          {factLevel === 1 ? "\"네 잘못이 아니야\" 위주 위로 (공감 90%)"
+                            : factLevel === 2 ? "\"혹시 이런 건 아니었을까?\" 조심스러운 지적 (공감 70%)"
+                            : factLevel === 3 ? "위로와 현실을 균형있게 (공감 50% + 팩트 50%)"
+                            : factLevel === 4 ? "\"솔직히 말하면...\" 구체적 지적 (팩트 80%)"
+                            : "\"야 진짜 솔직히 말할게\" 듣기 싫은 진실까지 (팩트 95%)"}
                         </p>
                       </div>
                       {analyzing ? (
