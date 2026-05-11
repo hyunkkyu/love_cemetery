@@ -174,17 +174,28 @@ export default function ManseryeokPage() {
     } catch { alert("오류가 발생했습니다") }
   }
 
-  const handleCalculate = () => {
+  // 기존 채팅이 있으면 저장 후 리셋
+  const saveAndResetChat = async () => {
+    if (chatMessages.length > 0 && analysis) {
+      await saveChatToDb(chatMessages)
+      loadSavedChats()
+    }
+    setChatMessages([])
+    setChatId(null)
+  }
+
+  const handleCalculate = async () => {
     if (!birthDate) return
+    await saveAndResetChat()
     const [y, m, d] = birthDate.split("-").map(Number)
     const hour = birthTime ? parseInt(birthTime) : 12
     setResult(calculateManseryeok(y, m, d, hour))
     setAnalysis("")
-    setChatMessages([])
   }
 
   const requestAnalysis = async () => {
     if (!result) return
+    await saveAndResetChat()
     setLoading(true)
     try {
       const res = await fetch("/api/manseryeok", {
@@ -201,9 +212,6 @@ export default function ManseryeokPage() {
       if (!res.ok) { setAnalysis("분석 서버 오류. 다시 시도해주세요."); return }
       const data = await res.json()
       setAnalysis(data.interpretation || "분석 결과를 가져올 수 없습니다.")
-      // 새 분석이므로 채팅 리셋
-      setChatMessages([])
-      setChatId(null)
     } catch {
       setAnalysis("분석을 가져오는 데 실패했습니다.")
     } finally {
