@@ -258,7 +258,7 @@ export default function LovePage() {
           <h1 className="text-4xl font-black" style={{ color: "#ff8ec4" }}>
             살랑살랑
           </h1>
-          <p className="text-pink-300/60 text-sm">
+          <p className="text-pink-200/80 text-sm">
             지금 설레는 그 사람, 과거의 연애와 뭐가 다를까?
           </p>
         </div>
@@ -270,7 +270,7 @@ export default function LovePage() {
               <h2 className="text-sm" style={{ color: "#ffaad4" }}>💾 저장된 사람</h2>
               <button
                 onClick={handleNewCrush}
-                className="text-xs text-pink-300/40 hover:text-pink-300 transition-colors"
+                className="text-xs text-pink-200/60 hover:text-pink-300 transition-colors"
               >
                 + 새 사람 추가
               </button>
@@ -287,7 +287,7 @@ export default function LovePage() {
                 >
                   <div onClick={() => handleLoadCrush(c)}>
                     <div className="text-2xl mb-1">💘</div>
-                    <p className="text-xs text-pink-200/70 truncate">{c.nickname}</p>
+                    <p className="text-xs text-pink-100/80 truncate">{c.nickname}</p>
                   </div>
                   <button
                     onClick={(e) => { e.stopPropagation(); handleDeleteCrush(c.id) }}
@@ -311,7 +311,7 @@ export default function LovePage() {
             {person.nickname && (
               <button
                 onClick={handleSaveCrush}
-                className="text-xs px-3 py-1 rounded-full border border-pink-400/30 text-pink-300/60
+                className="text-xs px-3 py-1 rounded-full border border-pink-400/30 text-pink-200/80
                   hover:bg-pink-500/10 hover:text-pink-300 transition-all"
               >
                 💾 저장
@@ -321,7 +321,7 @@ export default function LovePage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs text-pink-300/50 mb-1">이름/닉네임 *</label>
+              <label className="block text-xs text-pink-200/70 mb-1">이름/닉네임 *</label>
               <input
                 type="text"
                 value={person.nickname}
@@ -331,7 +331,7 @@ export default function LovePage() {
               />
             </div>
             <div>
-              <label className="block text-xs text-pink-300/50 mb-1">생년월일 *</label>
+              <label className="block text-xs text-pink-200/70 mb-1">생년월일 *</label>
               <DateInput
                 value={person.birthDate}
                 onChange={(v) => update("birthDate", v)}
@@ -342,7 +342,7 @@ export default function LovePage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs text-pink-300/50 mb-1">태어난 시간</label>
+              <label className="block text-xs text-pink-200/70 mb-1">태어난 시간</label>
               <select
                 value={person.birthTime}
                 onChange={(e) => update("birthTime", e.target.value)}
@@ -354,7 +354,7 @@ export default function LovePage() {
               </select>
             </div>
             <div>
-              <label className="block text-xs text-pink-300/50 mb-1">성격/MBTI</label>
+              <label className="block text-xs text-pink-200/70 mb-1">성격/MBTI</label>
               <input
                 type="text"
                 value={person.persona}
@@ -366,7 +366,7 @@ export default function LovePage() {
           </div>
 
           <div>
-            <label className="block text-xs text-pink-300/50 mb-1">카톡/대화 스타일</label>
+            <label className="block text-xs text-pink-200/70 mb-1">카톡/대화 스타일</label>
             <textarea
               value={person.chatStyle}
               onChange={(e) => update("chatStyle", e.target.value)}
@@ -378,7 +378,7 @@ export default function LovePage() {
 
           {/* 카카오톡 파일 업로드 */}
           <div>
-            <label className="block text-xs text-pink-300/50 mb-1">💬 카카오톡 대화 파일 (선택)</label>
+            <label className="block text-xs text-pink-200/70 mb-1">💬 카카오톡 대화 파일 (선택)</label>
             <input
               type="file"
               accept=".txt,.csv"
@@ -387,13 +387,13 @@ export default function LovePage() {
                 file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0
                 file:bg-pink-500/20 file:text-pink-300 file:cursor-pointer file:text-xs"
             />
-            <p className="text-[10px] text-pink-300/30 mt-1">
+            <p className="text-[10px] text-pink-200/50 mt-1">
               카톡 내보내기 .txt 파일을 첨부하면 대화 패턴까지 분석해요
             </p>
             {chatAnalysis && (
               <div className="mt-2 bg-pink-500/5 rounded-xl p-3 space-y-1">
-                <p className="text-xs text-pink-300/60">✅ 분석 완료: {chatAnalysis.totalMessages.toLocaleString()}개 메시지</p>
-                <p className="text-[10px] text-pink-300/40">
+                <p className="text-xs text-pink-200/80">✅ 분석 완료: {chatAnalysis.totalMessages.toLocaleString()}개 메시지</p>
+                <p className="text-[10px] text-pink-200/60">
                   연애온도 {chatAnalysis.loveTemperature}° · 감정 {chatAnalysis.sentimentScore}%
                   {chatAnalysis.topTopics?.length > 0 && ` · 주요 주제: ${chatAnalysis.topTopics.slice(0, 3).map(t => t.topic).join(", ")}`}
                 </p>
@@ -435,7 +435,7 @@ export default function LovePage() {
           <div className="space-y-6 animate-fade-in">
             {/* 궁합 점수 */}
             <div className="love-card border rounded-2xl p-8 text-center space-y-4">
-              <p className="text-pink-300/50 text-sm">
+              <p className="text-pink-200/70 text-sm">
                 나 ↔ {person.nickname}
               </p>
               <div className="relative inline-block">
@@ -443,7 +443,7 @@ export default function LovePage() {
                   {result.compatibility.score}%
                 </span>
               </div>
-              <p className="text-pink-300/40 text-xs">
+              <p className="text-pink-200/60 text-xs">
                 {result.compatibility.elementHarmony}
               </p>
             </div>
@@ -464,7 +464,7 @@ export default function LovePage() {
                 <h3 className="text-sm font-semibold" style={{ color: "#7eecd0" }}>💚 이런 점이 좋아요</h3>
                 <ul className="space-y-2">
                   {result.compatibility.strengths.map((s, i) => (
-                    <li key={i} className="text-xs text-pink-200/70 leading-relaxed">✦ {s}</li>
+                    <li key={i} className="text-xs text-pink-100/80 leading-relaxed">✦ {s}</li>
                   ))}
                 </ul>
               </div>
@@ -473,7 +473,7 @@ export default function LovePage() {
                 <ul className="space-y-2">
                   {result.compatibility.weaknesses.length > 0
                     ? result.compatibility.weaknesses.map((w, i) => (
-                        <li key={i} className="text-xs text-pink-200/70 leading-relaxed">⚠ {w}</li>
+                        <li key={i} className="text-xs text-pink-100/80 leading-relaxed">⚠ {w}</li>
                       ))
                     : <li className="text-xs text-pink-200/40">특별한 주의사항이 없어요!</li>
                   }
@@ -484,11 +484,11 @@ export default function LovePage() {
             {/* 사주 비교 */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="love-card border rounded-2xl p-5 space-y-3">
-                <h3 className="text-sm text-pink-300/50">내 사주</h3>
+                <h3 className="text-sm text-pink-200/70">내 사주</h3>
                 <PillarDisplay result={result.myManseryeok} />
               </div>
               <div className="love-card border rounded-2xl p-5 space-y-3">
-                <h3 className="text-sm text-pink-300/50">{person.nickname} 사주</h3>
+                <h3 className="text-sm text-pink-200/70">{person.nickname} 사주</h3>
                 <PillarDisplay result={result.personManseryeok} />
               </div>
             </div>
@@ -499,30 +499,30 @@ export default function LovePage() {
                 <h3 className="text-sm font-semibold" style={{ color: "#ffaad4" }}>💬 카카오톡 분석</h3>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   <div className="bg-pink-500/5 rounded-xl p-2 text-center">
-                    <p className="text-[10px] text-pink-300/40">총 메시지</p>
+                    <p className="text-[10px] text-pink-200/60">총 메시지</p>
                     <p className="text-sm font-bold text-pink-200">{chatAnalysis.totalMessages.toLocaleString()}</p>
                   </div>
                   <div className="bg-pink-500/5 rounded-xl p-2 text-center">
-                    <p className="text-[10px] text-pink-300/40">연애 온도</p>
+                    <p className="text-[10px] text-pink-200/60">연애 온도</p>
                     <p className="text-sm font-bold" style={{ color: chatAnalysis.loveTemperature > 70 ? "#ff8ec4" : chatAnalysis.loveTemperature > 40 ? "#ffe566" : "#7eecd0" }}>
                       {chatAnalysis.loveTemperature}°
                     </p>
                   </div>
                   <div className="bg-pink-500/5 rounded-xl p-2 text-center">
-                    <p className="text-[10px] text-pink-300/40">감정 점수</p>
+                    <p className="text-[10px] text-pink-200/60">감정 점수</p>
                     <p className="text-sm font-bold text-pink-200">{chatAnalysis.sentimentScore}%</p>
                   </div>
                   <div className="bg-pink-500/5 rounded-xl p-2 text-center">
-                    <p className="text-[10px] text-pink-300/40">활동 시간</p>
+                    <p className="text-[10px] text-pink-200/60">활동 시간</p>
                     <p className="text-sm font-bold text-pink-200">{chatAnalysis.mostActiveHour}시</p>
                   </div>
                 </div>
                 {chatAnalysis.topTopics?.length > 0 && (
                   <div className="space-y-1">
-                    <p className="text-[10px] text-pink-300/40">자주 나눈 대화 주제</p>
+                    <p className="text-[10px] text-pink-200/60">자주 나눈 대화 주제</p>
                     <div className="flex flex-wrap gap-1.5">
                       {chatAnalysis.topTopics.slice(0, 6).map((t) => (
-                        <span key={t.topic} className="px-2 py-0.5 text-[10px] bg-pink-500/10 text-pink-300/60 rounded-full">
+                        <span key={t.topic} className="px-2 py-0.5 text-[10px] bg-pink-500/10 text-pink-200/80 rounded-full">
                           {t.emoji} {t.topic} {t.percentage}%
                         </span>
                       ))}
@@ -538,7 +538,7 @@ export default function LovePage() {
                 <h3 className="text-sm font-semibold" style={{ color: "#ffaad4" }}>
                   ⚰️ 과거 연애와 비교하기
                 </h3>
-                <p className="text-xs text-pink-300/40">
+                <p className="text-xs text-pink-200/60">
                   비교할 과거 연애를 선택하면 AI가 차이점을 분석해줘요
                 </p>
                 <div className="flex gap-3 overflow-x-auto pb-2">
@@ -565,9 +565,9 @@ export default function LovePage() {
                             {info.emoji}
                           </div>
                         )}
-                        <p className="text-xs text-pink-200/70 truncate">{g.nickname}</p>
+                        <p className="text-xs text-pink-100/80 truncate">{g.nickname}</p>
                         {g.compatibility && (
-                          <p className="text-[10px] text-pink-300/40">{g.compatibility.score}%</p>
+                          <p className="text-[10px] text-pink-200/60">{g.compatibility.score}%</p>
                         )}
                       </button>
                     )
@@ -585,20 +585,20 @@ export default function LovePage() {
                 {aiAdvice && (
                   <button
                     onClick={() => { setAiAdvice(""); handleAiAdvice() }}
-                    className="text-[10px] text-pink-300/40 hover:text-pink-300 transition-colors"
+                    className="text-[10px] text-pink-200/60 hover:text-pink-300 transition-colors"
                   >
                     🔄 다시 분석
                   </button>
                 )}
               </div>
               {aiAdvice ? (
-                <div className="text-sm text-pink-200/80 whitespace-pre-wrap leading-relaxed love-shimmer rounded-xl p-4">
+                <div className="text-sm text-pink-100/90 whitespace-pre-wrap leading-relaxed love-shimmer rounded-xl p-4">
                   {aiAdvice}
                 </div>
               ) : loading ? (
                 <div className="text-center py-8 space-y-3">
                   <div className="text-3xl heartbeat inline-block">💘</div>
-                  <p className="text-pink-300/40 text-xs animate-pulse">두 사람의 인연을 살펴보고 있어요...</p>
+                  <p className="text-pink-200/60 text-xs animate-pulse">두 사람의 인연을 살펴보고 있어요...</p>
                 </div>
               ) : (
                 <button
@@ -629,19 +629,19 @@ export default function LovePage() {
                     <div className="flex items-center gap-3">
                       <span className="text-lg">💘</span>
                       <div>
-                        <p className="text-sm text-pink-200/80">
+                        <p className="text-sm text-pink-100/90">
                           {rec.crushName}
                           {rec.comparedWith && (
-                            <span className="text-pink-300/40"> vs {rec.comparedWith}</span>
+                            <span className="text-pink-200/60"> vs {rec.comparedWith}</span>
                           )}
                         </p>
-                        <p className="text-[10px] text-pink-300/30">
+                        <p className="text-[10px] text-pink-200/50">
                           {new Date(rec.createdAt).toLocaleDateString("ko-KR")} · 궁합 {rec.score}%
                         </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs text-pink-300/30">
+                      <span className="text-xs text-pink-200/50">
                         {viewingRecord?.id === rec.id ? "▲" : "▼"}
                       </span>
                       <button
@@ -661,7 +661,7 @@ export default function LovePage() {
                   </button>
                   {viewingRecord?.id === rec.id && (
                     <div className="px-5 pb-4 border-t border-pink-500/10 pt-3 animate-fade-in">
-                      <p className="text-sm text-pink-200/70 whitespace-pre-wrap leading-relaxed">
+                      <p className="text-sm text-pink-100/80 whitespace-pre-wrap leading-relaxed">
                         {rec.aiAdvice}
                       </p>
                     </div>
@@ -674,7 +674,7 @@ export default function LovePage() {
 
         {/* 하단 네비 */}
         <div className="text-center pb-8">
-          <a href="/" className="text-pink-300/30 text-xs hover:text-pink-300/60 transition-colors">
+          <a href="/" className="text-pink-200/50 text-xs hover:text-pink-200/80 transition-colors">
             ← 명예의전당으로 돌아가기
           </a>
         </div>

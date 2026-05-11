@@ -1,15 +1,15 @@
 @import "tailwindcss";
 
 @theme {
-  --color-cemetery-bg: #0c0c14;
-  --color-cemetery-surface: #151522;
-  --color-cemetery-card: #1c1c30;
+  --color-cemetery-bg: #0a0a12;
+  --color-cemetery-surface: #12121f;
+  --color-cemetery-card: #181830;
   --color-cemetery-border: #2e2e48;
   --color-cemetery-accent: #8b7bf7;
   --color-cemetery-accent-dim: #6a5ad0;
-  --color-cemetery-ghost: #b0b0cc;
-  --color-cemetery-text: #e0e0f0;
-  --color-cemetery-heading: #f5f5ff;
+  --color-cemetery-ghost: #c0c0d8;
+  --color-cemetery-text: #ededf8;
+  --color-cemetery-heading: #ffffff;
   --color-tombstone: #2a2a42;
   --color-tombstone-light: #3a3a55;
   --color-moss: #2d5a3d;
@@ -267,14 +267,13 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 }
 
 .love-shimmer {
-  background: linear-gradient(90deg, transparent 0%, rgba(255,142,196,0.15) 50%, transparent 100%);
-  background-size: 200% 100%;
-  animation: shimmer 3s ease-in-out infinite;
+  background: rgba(255,142,196,0.05);
+  border-radius: 12px;
 }
 
 .love-card {
-  background: linear-gradient(135deg, #1f1428 0%, #2a1530 50%, #1f1428 100%);
-  border-color: rgba(255,142,196,0.2);
+  background: #1a1228;
+  border-color: rgba(255,142,196,0.25);
   transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 .love-card:hover {
@@ -284,9 +283,9 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 }
 
 .love-input {
-  background: rgba(255,142,196,0.05);
-  border: 1px solid rgba(255,142,196,0.15);
-  color: #f0d0e0;
+  background: #140e1e;
+  border: 1px solid rgba(255,142,196,0.2);
+  color: #f5eef2;
 }
 .love-input:focus {
   border-color: rgba(255,142,196,0.5);
@@ -294,7 +293,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
   box-shadow: 0 0 12px rgba(255,142,196,0.1);
 }
 .love-input::placeholder {
-  color: rgba(255,142,196,0.3);
+  color: rgba(255,142,196,0.35);
 }
 
 .love-btn {
