@@ -17,6 +17,8 @@ const CounselSchema = new mongoose.Schema({
   question: { type: String, required: true },
   answer: { type: String, required: true },
   coinUsed: { type: Number, default: 0 },
+  isPermanent: { type: Boolean, default: false },
+  expiresAt: { type: Date, index: true }, // 7일 후 만료
 }, { timestamps: true })
 
 const Counsel = mongoose.models.Counsel || mongoose.model("Counsel", CounselSchema)
@@ -36,11 +38,33 @@ export async function POST(request: NextRequest) {
   try {
     switch (action) {
       case "counsel.history": {
-        const history = await Counsel.find({ userId }).sort({ createdAt: -1 }).limit(50).lean()
+        const history = await Counsel.find({
+          userId,
+          $or: [
+            { isPermanent: true },
+            { expiresAt: { $gt: new Date() } },
+            { expiresAt: { $exists: false } }, // 기존 기록 호환
+          ],
+        }).sort({ createdAt: -1 }).limit(50).lean()
+
+        const now = Date.now()
         return NextResponse.json({
           data: history.map((h) => {
             const doc = h as Record<string, unknown>
-            return { id: String(doc._id), question: doc.question, answer: doc.answer, coinUsed: doc.coinUsed, createdAt: doc.createdAt }
+            const expires = doc.expiresAt ? new Date(doc.expiresAt as string).getTime() : 0
+            const daysLeft = doc.isPermanent ? -1
+              : !doc.expiresAt ? -1 // 기존 기록은 영구 취급
+              : Math.max(0, Math.ceil((expires - now) / (24 * 60 * 60 * 1000)))
+            return {
+              id: String(doc._id),
+              question: doc.question,
+              answer: doc.answer,
+              coinUsed: doc.coinUsed,
+              createdAt: doc.createdAt,
+              isPermanent: doc.isPermanent || !doc.expiresAt,
+              daysLeft,
+              isExpiring: daysLeft >= 0 && daysLeft <= 2 && !doc.isPermanent && !!doc.expiresAt,
+            }
           }),
         })
       }
@@ -146,12 +170,29 @@ ${question}
 
         const answer = await callLLM(prompt, "medium", "counselor")
 
-        // 상담 기록 저장
-        await Counsel.create({ userId, question, answer, coinUsed })
+        // 상담 기록 저장 (7일 후 만료)
+        const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+        await Counsel.create({ userId, question, answer, coinUsed, expiresAt })
 
         return NextResponse.json({
           data: { answer, coinUsed, freeRemaining: isFree ? Math.max(0, FREE_LIMIT - todayFreeCount - 1) : 0 },
         })
+      }
+
+      case "counsel.extend": {
+        // 10코인으로 영구 보관
+        const spendResult = await UserData.findOneAndUpdate(
+          { userId, coins: { $gte: 10 } },
+          { $inc: { coins: -10 } },
+          { returnDocument: "after" }
+        )
+        if (!spendResult) return NextResponse.json({ error: "코인이 부족합니다 (10코인 필요)" }, { status: 400 })
+
+        await Counsel.findOneAndUpdate(
+          { _id: body.counselId, userId },
+          { $set: { isPermanent: true }, $unset: { expiresAt: "" } }
+        )
+        return NextResponse.json({ data: { success: true, coins: spendResult.coins } })
       }
 
       case "counsel.delete": {

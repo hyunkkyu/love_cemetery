@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
+import { useRouter } from "next/navigation"
 
 const STEPS = [
   {
@@ -87,12 +88,27 @@ export function Tutorial() {
   const { data: session } = useSession()
   const [show, setShow] = useState(false)
   const [step, setStep] = useState(0)
+  const [hideToday, setHideToday] = useState(false)
+  const isLoggedIn = !!session?.user
+  const router = useRouter()
+
+  const handleLinkClick = (e: React.MouseEvent, href: string) => {
+    e.preventDefault()
+    handleClose()
+    if (isLoggedIn) {
+      router.push(href)
+    } else {
+      router.push("/login")
+    }
+  }
 
   useEffect(() => {
-    if (!session?.user) return
-    if (localStorage.getItem("tutorial-done")) return
+    // "오늘 하루 보지 않기"가 오늘 날짜면 숨김
+    const skipDate = localStorage.getItem("tutorial-skip-date")
+    const today = new Date().toISOString().slice(0, 10)
+    if (skipDate === today) return
     setShow(true)
-  }, [session])
+  }, [])
 
   useEffect(() => {
     const handler = () => { setStep(0); setShow(true) }
@@ -101,8 +117,11 @@ export function Tutorial() {
   }, [])
 
   const handleClose = () => {
+    if (hideToday) {
+      const today = new Date().toISOString().slice(0, 10)
+      localStorage.setItem("tutorial-skip-date", today)
+    }
     setShow(false)
-    localStorage.setItem("tutorial-done", "1")
   }
 
   if (!show) return null
@@ -148,11 +167,22 @@ export function Tutorial() {
 
         {/* 바로가기 */}
         {current.link && (
-          <a href={current.link} onClick={handleClose}
+          <a href={current.link} onClick={(e) => handleLinkClick(e, current.link!)}
             className="block text-center py-2.5 bg-cemetery-accent/20 hover:bg-cemetery-accent/30 border border-cemetery-accent/30 rounded-xl text-sm text-cemetery-accent transition-colors">
-            {current.linkText}
+            {isLoggedIn ? current.linkText : "🔒 로그인하고 시작하기 →"}
           </a>
         )}
+
+        {/* 오늘 하루 보지 않기 */}
+        <label className="flex items-center justify-center gap-2 cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={hideToday}
+            onChange={(e) => setHideToday(e.target.checked)}
+            className="w-4 h-4 rounded border-cemetery-border bg-cemetery-surface accent-cemetery-accent"
+          />
+          <span className="text-[11px] text-cemetery-ghost/50">오늘 하루 보지 않기</span>
+        </label>
 
         {/* 버튼 */}
         <div className="flex gap-3">
@@ -167,9 +197,16 @@ export function Tutorial() {
               건너뛰기
             </button>
           )}
-          <button onClick={() => isLast ? handleClose() : setStep(step + 1)}
+          <button onClick={() => {
+              if (isLast) {
+                handleClose()
+                if (!isLoggedIn) router.push("/login")
+              } else {
+                setStep(step + 1)
+              }
+            }}
             className="flex-1 py-3 bg-cemetery-accent hover:bg-cemetery-accent-dim rounded-xl text-sm font-semibold transition-colors cute-press">
-            {isLast ? "시작하기! 👻" : "다음 →"}
+            {isLast ? (isLoggedIn ? "시작하기! 👻" : "로그인하고 시작하기 👻") : "다음 →"}
           </button>
         </div>
       </div>

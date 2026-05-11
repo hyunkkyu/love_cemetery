@@ -10,6 +10,9 @@ interface CounselRecord {
   answer: string
   coinUsed: number
   createdAt: string
+  isPermanent: boolean
+  daysLeft: number // -1 = 영구
+  isExpiring: boolean
 }
 
 interface CounselStatus {
@@ -142,6 +145,7 @@ export default function CounselPage() {
             {counselStatus && counselStatus.freeRemaining > 0
               ? "무료 상담 " + counselStatus.freeRemaining + "회 남음"
               : "🪙 " + (counselStatus?.coinCost || 20) + "코인 차감"}
+            {" · 기록 7일 무료 보관 (이후 10코인 영구)"}
           </p>
           <button
             onClick={handleAsk}
@@ -201,11 +205,19 @@ export default function CounselPage() {
           {showHistory && (
             <div className="space-y-3 animate-fade-in">
               {history.map((h) => (
-                <div key={h.id} className="bg-cemetery-card border border-cemetery-border rounded-2xl overflow-hidden">
+                <div key={h.id} className={`bg-cemetery-card border rounded-2xl overflow-hidden ${h.isExpiring ? "border-red-500/30" : "border-cemetery-border"}`}>
                   <div className="px-5 py-3 bg-cemetery-surface/50">
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm text-cemetery-heading">{h.question}</p>
-                      <div className="flex items-center gap-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-sm text-cemetery-heading flex-1 min-w-0 truncate">{h.question}</p>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        {/* 보관 상태 뱃지 */}
+                        {h.isPermanent || h.daysLeft === -1 ? (
+                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-cemetery-accent/15 text-cemetery-accent">♾️ 영구</span>
+                        ) : (
+                          <span className={`text-[10px] px-1.5 py-0.5 rounded ${h.isExpiring ? "bg-red-500/15 text-red-400" : "bg-yellow-500/10 text-yellow-400"}`}>
+                            {h.daysLeft}일 남음
+                          </span>
+                        )}
                         {h.coinUsed > 0 && (
                           <span className="text-[10px] text-yellow-400">🪙 {h.coinUsed}</span>
                         )}
@@ -220,6 +232,28 @@ export default function CounselPage() {
                       {h.answer}
                     </p>
                   </div>
+                  {/* 영구 보관 / 삭제 버튼 */}
+                  {!(h.isPermanent || h.daysLeft === -1) && (
+                    <div className="px-5 py-2 border-t border-cemetery-border/50 flex items-center justify-between">
+                      <p className="text-[10px] text-cemetery-ghost/30">
+                        {h.isExpiring ? "⚠️ 곧 만료됩니다" : `${h.daysLeft}일 후 자동 삭제`}
+                      </p>
+                      <button
+                        onClick={async () => {
+                          if (!confirm("10코인으로 영구 보관할까요?")) return
+                          try {
+                            await callCounsel("counsel.extend", { counselId: h.id })
+                            reload()
+                          } catch (err) {
+                            setError(err instanceof Error ? err.message : "영구 보관 실패")
+                          }
+                        }}
+                        className="text-[11px] px-3 py-1 bg-cemetery-accent/20 hover:bg-cemetery-accent/30 text-cemetery-accent rounded-lg transition-colors"
+                      >
+                        🪙 10 영구 보관
+                      </button>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

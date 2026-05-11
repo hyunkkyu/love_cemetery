@@ -7,9 +7,10 @@ import { GraveCard } from "@/components/GraveCard"
 import { dbGraves } from "@/lib/api-client"
 import { PixelArt, PIXEL_ARTS } from "@/components/PixelArt"
 import { WeeklyReport } from "@/components/WeeklyReport"
+import { LandingIntro } from "@/components/LandingIntro"
 
 export default function HomePage() {
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
   const [graves, setGraves] = useState<Grave[]>([])
   const [showIntro, setShowIntro] = useState(true)
   const [introPhase, setIntroPhase] = useState(0)
@@ -19,8 +20,9 @@ export default function HomePage() {
     if (userId) dbGraves.list(userId).then((d) => setGraves(d || []))
   }, [userId])
 
-  // 오프닝 애니메이션 시퀀스
+  // 오프닝 애니메이션 시퀀스 (로그인 유저만)
   useEffect(() => {
+    if (!session?.user) return
     const hasSeenIntro = sessionStorage.getItem("intro-seen")
     if (hasSeenIntro) {
       setShowIntro(false)
@@ -37,7 +39,20 @@ export default function HomePage() {
       }, 4500),
     ]
     return () => timers.forEach(clearTimeout)
-  }, [])
+  }, [session])
+
+  // 비로그인 → 랜딩 페이지
+  if (status === "loading") {
+    return (
+      <div className="flex items-center justify-center py-32">
+        <div className="text-cemetery-ghost/40 text-sm animate-pulse">불러오는 중...</div>
+      </div>
+    )
+  }
+
+  if (!session?.user) {
+    return <LandingIntro />
+  }
 
   // 으스스한 오프닝
   if (showIntro) {
