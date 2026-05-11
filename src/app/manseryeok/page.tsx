@@ -140,12 +140,21 @@ export default function ManseryeokPage() {
       const data = await res.json()
       if (data.expired) { alert("보관 기간이 만료된 기록입니다."); return }
       if (data.data) {
+        const bd = (data.data.birthDate as string) || ""
+        const nm = (data.data.name as string) || ""
         setChatMessages((data.data.messages || []) as ChatMsg[])
         setChatId(data.data.id as string)
         setAnalysis(data.data.analysis as string || "")
-        setBirthDate(data.data.birthDate as string || "")
-        setName(data.data.name as string || "")
+        setBirthDate(bd)
+        setName(nm)
         setShowHistory(false)
+
+        // 사주 재계산 (result가 있어야 분석 결과 + 추가 질문이 표시됨)
+        if (bd) {
+          const [y, m, d] = bd.split("-").map(Number)
+          const hour = birthTime ? parseInt(birthTime) : 12
+          setResult(calculateManseryeok(y, m, d, hour))
+        }
       }
     } catch { /* ignore */ }
   }
@@ -350,18 +359,7 @@ export default function ManseryeokPage() {
 
           {/* 분석 결과 */}
           {analysis && !loading && (
-            <div className="bg-cemetery-card border border-cemetery-border rounded-2xl p-5 space-y-3">
-              <div className="flex items-center justify-between">
-                <h2 className="text-sm font-semibold text-cemetery-heading">🔮 종합 분석 결과</h2>
-                <button onClick={() => { setAnalysis(""); requestAnalysis() }}
-                  className="text-[10px] text-cemetery-ghost/40 hover:text-cemetery-accent transition-colors">
-                  🔄 재분석
-                </button>
-              </div>
-              <div className="text-sm text-cemetery-text whitespace-pre-wrap leading-relaxed">
-                {analysis}
-              </div>
-            </div>
+            <AnalysisResult analysis={analysis} onReanalyze={() => { setAnalysis(""); requestAnalysis() }} />
           )}
 
           {/* 후속 채팅 */}
@@ -476,4 +474,125 @@ export default function ManseryeokPage() {
       )}
     </div>
   )
+}
+
+/** 분석 결과를 섹션별로 분리하여 접기/펼치기 가능하게 */
+function AnalysisResult({ analysis, onReanalyze }: { analysis: string; onReanalyze: () => void }) {
+  const [collapsed, setCollapsed] = useState(false)
+  const [expandedSections, setExpandedSections] = useState<Set<number>>(new Set())
+
+  // 분석 텍스트를 **소제목** 기준으로 섹션 분리
+  const sections = parseSections(analysis)
+  const hasMultiple = sections.length > 1
+
+  const toggleSection = (idx: number) => {
+    setExpandedSections((prev) => {
+      const next = new Set(prev)
+      if (next.has(idx)) next.delete(idx)
+      else next.add(idx)
+      return next
+    })
+  }
+
+  const expandAll = () => setExpandedSections(new Set(sections.map((_, i) => i)))
+  const collapseAll = () => setExpandedSections(new Set())
+
+  return (
+    <div className="bg-cemetery-card border border-cemetery-border rounded-2xl overflow-hidden">
+      {/* 헤더 */}
+      <div className="px-5 py-3 bg-cemetery-surface/50 flex items-center justify-between">
+        <button onClick={() => setCollapsed(!collapsed)} className="flex items-center gap-2">
+          <h2 className="text-sm font-semibold text-cemetery-heading">🔮 종합 분석 결과</h2>
+          <span className="text-[10px] text-cemetery-ghost/40">{collapsed ? "▼" : "▲"}</span>
+        </button>
+        <div className="flex items-center gap-2">
+          {hasMultiple && !collapsed && (
+            <button onClick={expandedSections.size === sections.length ? collapseAll : expandAll}
+              className="text-[10px] text-cemetery-ghost/40 hover:text-cemetery-accent">
+              {expandedSections.size === sections.length ? "모두 접기" : "모두 펼치기"}
+            </button>
+          )}
+          <button onClick={onReanalyze}
+            className="text-[10px] text-cemetery-ghost/40 hover:text-cemetery-accent transition-colors">
+            🔄 재분석
+          </button>
+        </div>
+      </div>
+
+      {/* 본문 */}
+      {!collapsed && (
+        <div className="px-5 py-3">
+          {hasMultiple ? (
+            // 섹션별 아코디언
+            <div className="space-y-2">
+              {sections.map((section, i) => {
+                const isOpen = expandedSections.has(i)
+                return (
+                  <div key={i} className="border border-cemetery-border/30 rounded-xl overflow-hidden">
+                    <button onClick={() => toggleSection(i)}
+                      className="w-full px-4 py-2.5 flex items-center justify-between text-left bg-cemetery-surface/30 hover:bg-cemetery-surface/50 transition-colors">
+                      <span className="text-sm font-semibold text-cemetery-heading">{section.title}</span>
+                      <span className="text-[10px] text-cemetery-ghost/40">{isOpen ? "▲" : "▼"}</span>
+                    </button>
+                    {isOpen && (
+                      <div className="px-4 py-3 text-sm text-cemetery-text whitespace-pre-wrap leading-relaxed animate-fade-in">
+                        {section.content}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          ) : (
+            // 섹션이 1개면 그냥 표시
+            <div className="text-sm text-cemetery-text whitespace-pre-wrap leading-relaxed">
+              {analysis}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+/** **소제목** 패턴으로 텍스트를 섹션으로 분리 */
+function parseSections(text: string): Array<{ title: string; content: string }> {
+  // **제목** 또는 ## 제목 또는 이모지+제목 패턴
+  const lines = text.split("\n")
+  const sections: Array<{ title: string; content: string }> = []
+  let currentTitle = ""
+  let currentContent: string[] = []
+
+  for (const line of lines) {
+    // 소제목 감지: **텍스트**, ## 텍스트, 이모지 + 텍스트 (줄 전체가 짧고 볼드)
+    const boldMatch = line.match(/^\*\*(.+?)\*\*\s*$/)
+    const hashMatch = line.match(/^#{1,3}\s+(.+)$/)
+    const emojiTitleMatch = line.match(/^[🔮💫🪔🕯️✨💘🔥⚡🌳💧⛰️⚔️🧠💼🏥📅👨‍👩‍👧🐾🎨💪🔍💡🪞✝️☯️⭐🌙]\s*.{3,30}$/)
+
+    const isTitle = boldMatch || hashMatch || emojiTitleMatch
+
+    if (isTitle && line.trim().length < 50) {
+      // 이전 섹션 저장
+      if (currentTitle || currentContent.length > 0) {
+        sections.push({
+          title: currentTitle || "분석 결과",
+          content: currentContent.join("\n").trim(),
+        })
+      }
+      currentTitle = (boldMatch?.[1] || hashMatch?.[1] || line).trim()
+      currentContent = []
+    } else {
+      currentContent.push(line)
+    }
+  }
+
+  // 마지막 섹션
+  if (currentTitle || currentContent.length > 0) {
+    sections.push({
+      title: currentTitle || "분석 결과",
+      content: currentContent.join("\n").trim(),
+    })
+  }
+
+  return sections.filter((s) => s.content.trim().length > 0)
 }
