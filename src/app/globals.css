@@ -30,7 +30,7 @@ body {
   background-color: var(--color-cemetery-bg);
   color: var(--color-cemetery-text);
   color-scheme: dark;
-  font-size: 15px;
+  font-size: 1rem;
   line-height: 1.6;
   letter-spacing: -0.01em;
   -webkit-font-smoothing: antialiased;

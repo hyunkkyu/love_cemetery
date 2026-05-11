@@ -8,6 +8,7 @@ import { DailyFortune } from "@/components/DailyFortune"
 import { Tutorial } from "@/components/Tutorial"
 import { FloatingGhosts } from "@/components/FloatingGhosts"
 import { ServiceWorkerRegister } from "@/components/ServiceWorker"
+import { FontSizeControl } from "@/components/FontSizeControl"
 
 import type { Viewport } from "next"
 
@@ -68,6 +69,7 @@ export default function RootLayout({
           <Tutorial />
           <DailyFortune />
           <ServiceWorkerRegister />
+          <FontSizeControl />
           <FeedbackWidget />
         </AuthProvider>
       </body>
