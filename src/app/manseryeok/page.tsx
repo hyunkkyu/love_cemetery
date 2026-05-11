@@ -374,7 +374,7 @@ export default function ManseryeokPage() {
 
               {/* 대화 내역 */}
               {chatMessages.length > 0 && (
-                <div className="px-5 py-3 space-y-3 max-h-[400px] overflow-y-auto">
+                <div className="px-5 py-3 space-y-3">
                   {chatMessages.map((msg, i) => (
                     <div key={i} className={msg.role === "user" ? "text-right" : ""}>
                       {msg.role === "ai" && <span className="text-[10px] text-cemetery-accent">🔮 분석가</span>}
