@@ -7,6 +7,7 @@ import { calculateManseryeok } from "@/lib/manseryeok"
 import { PillarDisplay } from "@/components/PillarDisplay"
 import { DateInput } from "@/components/DateInput"
 import { GenderSelect } from "@/components/GenderSelect"
+import { dbSajuProfile } from "@/lib/community-client"
 
 const ANALYSIS_CATEGORIES = [
   { id: "love", label: "💘 연애/결혼운", desc: "연애 성향, 이상형, 결혼 시기" },
@@ -63,6 +64,8 @@ export default function ManseryeokPage() {
   const [chatId, setChatId] = useState<string | null>(null)
   const [savedChats, setSavedChats] = useState<Array<Record<string, unknown>>>([])
   const [showHistory, setShowHistory] = useState(false)
+  const [saveAsMyProfile, setSaveAsMyProfile] = useState(false)
+  const [myProfileLoaded, setMyProfileLoaded] = useState(false)
   const chatEndRef = useRef<HTMLDivElement>(null)
 
   const hourOptions = [
@@ -99,6 +102,22 @@ export default function ManseryeokPage() {
 
     loadSavedChats()
   }, [userId])
+
+  // 본인 사주 프로필 자동 불러오기
+  useEffect(() => {
+    if (!userId || myProfileLoaded) return
+    dbSajuProfile.get(userId).then((res) => {
+      const p = res?.data?.profile || res?.data
+      if (p?.birthDate) {
+        setBirthDate(p.birthDate)
+        if (p.birthTime) setBirthTime(p.birthTime)
+        if (p.gender) setGender(p.gender)
+        setName(res?.data?.nickname || "")
+        setSaveAsMyProfile(true)
+        setMyProfileLoaded(true)
+      }
+    }).catch(() => {})
+  }, [userId, myProfileLoaded])
 
   const loadSavedChats = async () => {
     try {
@@ -189,8 +208,22 @@ export default function ManseryeokPage() {
     await saveAndResetChat()
     const [y, m, d] = birthDate.split("-").map(Number)
     const hour = birthTime ? parseInt(birthTime) : 12
-    setResult(calculateManseryeok(y, m, d, hour))
+    const calcResult = calculateManseryeok(y, m, d, hour)
+    setResult(calcResult)
     setAnalysis("")
+
+    if (saveAsMyProfile && userId) {
+      const yearBranch = calcResult.fourPillars.year.branch
+      const ilju = `${calcResult.fourPillars.day.stem}${calcResult.fourPillars.day.branch}`
+      try {
+        await dbSajuProfile.register(userId, session?.user?.name || name || "익명", {
+          birthDate, birthTime, gender, ilju, yearBranch,
+          dominantElement: calcResult.dominantElement,
+          elementBalance: calcResult.elementBalance,
+          isPublic: true,
+        })
+      } catch { /* ignore save failure */ }
+    }
   }
 
   const requestAnalysis = async () => {
@@ -306,6 +339,15 @@ export default function ManseryeokPage() {
               {hourOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
             </select>
           </div>
+        </div>
+        <div className="space-y-1">
+          <label className="flex items-center gap-2 cursor-pointer select-none">
+            <input type="checkbox" checked={saveAsMyProfile} onChange={(e) => setSaveAsMyProfile(e.target.checked)} disabled={!userId}
+              className="accent-cemetery-accent w-4 h-4 rounded" />
+            <span className="text-xs text-cemetery-ghost">본인 사주로 저장 (궁합 매칭에 사용)</span>
+          </label>
+          {myProfileLoaded && <p className="text-xs text-green-400/60">✓ 기존 본인 사주 정보를 불러왔습니다</p>}
+          {!userId && <p className="text-xs text-cemetery-ghost/30">로그인하면 본인 사주를 저장할 수 있어요</p>}
         </div>
         <button type="button" onClick={handleCalculate} disabled={!birthDate}
           className="w-full py-3 bg-cemetery-accent hover:bg-cemetery-accent-dim disabled:opacity-40 rounded-xl font-semibold transition-colors cute-press">

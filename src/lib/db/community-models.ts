@@ -33,10 +33,12 @@ const SajuProfileSchema = new Schema({
   nickname: { type: String, required: true },
   birthDate: String,
   birthTime: String,
+  gender: { type: String, enum: ["M", "F"], index: true },
   dominantElement: String,
   elementBalance: Schema.Types.Mixed,
   mbti: { type: String, index: true },
   ilju: { type: String, index: true },
+  yearBranch: { type: String, index: true }, // 연지(띠): 자,축,인,...
   lookingFor: { type: String, maxlength: 200 },
   introduction: { type: String, maxlength: 500 },
   isPublic: { type: Boolean, default: true },

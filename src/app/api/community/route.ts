@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
   await connectDB()
 
   // 읽기 액션은 인증 불필요
-  const readActions = ["posts.list", "posts.get", "comments.list"]
+  const readActions = ["posts.list", "posts.get", "comments.list", "saju.stats"]
   let userId: string | undefined
   let userName: string | undefined
 
@@ -227,6 +227,128 @@ export async function POST(request: NextRequest) {
           coinsSpent: 30,
           remainingCoins: user.coins,
         })
+      }
+
+      // === 통계 ===
+      case "saju.stats": {
+        const profiles = await SajuProfile.find({ isPublic: true }).lean()
+        const total = profiles.length
+        const genderDist = { M: 0, F: 0, unknown: 0 }
+        const elementDist: Record<string, number> = { 목: 0, 화: 0, 토: 0, 금: 0, 수: 0 }
+        const yearBranchDist: Record<string, number> = {}
+        const iljuDist: Record<string, number> = {}
+        const mbtiDist: Record<string, number> = {}
+
+        for (const p of profiles) {
+          const doc = p as Record<string, unknown>
+          if (doc.gender === "M") genderDist.M++
+          else if (doc.gender === "F") genderDist.F++
+          else genderDist.unknown++
+
+          if (doc.dominantElement && elementDist[doc.dominantElement as string] !== undefined) {
+            elementDist[doc.dominantElement as string]++
+          }
+          if (doc.yearBranch) yearBranchDist[doc.yearBranch as string] = (yearBranchDist[doc.yearBranch as string] || 0) + 1
+          if (doc.ilju) iljuDist[doc.ilju as string] = (iljuDist[doc.ilju as string] || 0) + 1
+          if (doc.mbti) mbtiDist[doc.mbti as string] = (mbtiDist[doc.mbti as string] || 0) + 1
+        }
+
+        // 최근 업데이트 시간
+        const latest = await SajuProfile.findOne({ isPublic: true }).sort({ updatedAt: -1 }).lean()
+        const lastUpdatedAt = latest ? (latest as Record<string, unknown>).updatedAt : null
+
+        return NextResponse.json({
+          data: {
+            total, genderDist, elementDist,
+            yearBranchDist, iljuDist, mbtiDist,
+            lastUpdatedAt,
+          },
+        })
+      }
+
+      case "saju.premiumStat": {
+        // 10코인 차감
+        const spender = await UserData.findOneAndUpdate(
+          { userId, coins: { $gte: 10 } },
+          { $inc: { coins: -10 } },
+          { new: true }
+        )
+        if (!spender) return NextResponse.json({ error: "코인이 부족합니다 (10코인 필요)" }, { status: 400 })
+
+        const statType = payload.statType as string
+        const allProfiles = await SajuProfile.find({ isPublic: true }).lean()
+
+        const ZODIAC: Record<string, string> = {
+          자: "🐭 쥐", 축: "🐮 소", 인: "🐯 호랑이", 묘: "🐰 토끼",
+          진: "🐲 용", 사: "🐍 뱀", 오: "🐴 말", 미: "🐑 양",
+          신: "🐵 원숭이", 유: "🐔 닭", 술: "🐶 개", 해: "🐷 돼지",
+        }
+        const ELEMENT_TRAITS: Record<string, string> = {
+          목: "성장지향, 창의적, 인자함, 리더십",
+          화: "열정적, 예의 바름, 활력 넘침, 표현력",
+          토: "안정적, 신뢰감, 중재 능력, 책임감",
+          금: "결단력, 의리, 강인함, 완벽주의",
+          수: "지혜로움, 유연함, 소통 능력, 적응력",
+        }
+
+        let result: unknown = null
+
+        switch (statType) {
+          case "elementTraits": {
+            const dist: Array<{ element: string; count: number; traits: string; ratio: string }> = []
+            for (const el of ["목", "화", "토", "금", "수"]) {
+              const count = allProfiles.filter((p) => (p as Record<string, unknown>).dominantElement === el).length
+              dist.push({
+                element: el,
+                count,
+                traits: ELEMENT_TRAITS[el] || "",
+                ratio: allProfiles.length > 0 ? (count / allProfiles.length * 100).toFixed(1) + "%" : "0%",
+              })
+            }
+            result = dist
+            break
+          }
+          case "yearBranch": {
+            const dist: Array<{ branch: string; zodiac: string; count: number }> = []
+            const branches = ["자", "축", "인", "묘", "진", "사", "오", "미", "신", "유", "술", "해"]
+            for (const b of branches) {
+              const count = allProfiles.filter((p) => (p as Record<string, unknown>).yearBranch === b).length
+              if (count > 0) dist.push({ branch: b, zodiac: ZODIAC[b] || b, count })
+            }
+            dist.sort((a, b) => b.count - a.count)
+            result = dist
+            break
+          }
+          case "iljuDist": {
+            const map: Record<string, number> = {}
+            for (const p of allProfiles) {
+              const ilju = (p as Record<string, unknown>).ilju as string
+              if (ilju) map[ilju] = (map[ilju] || 0) + 1
+            }
+            result = Object.entries(map)
+              .map(([ilju, count]) => ({ ilju, count }))
+              .sort((a, b) => b.count - a.count)
+              .slice(0, 20)
+            break
+          }
+          case "elementCompat": {
+            // 오행 조합별 궁합 통계
+            const generating: [string, string][] = [["목", "화"], ["화", "토"], ["토", "금"], ["금", "수"], ["수", "목"]]
+            const combos = generating.map(([a, b]) => ({
+              pair: `${a} → ${b}`,
+              type: "상생",
+              desc: `${a} 기운이 ${b}를 살려주는 관계`,
+              count: allProfiles.filter((p) => (p as Record<string, unknown>).dominantElement === a).length
+                + allProfiles.filter((p) => (p as Record<string, unknown>).dominantElement === b).length,
+            }))
+            result = combos
+            break
+          }
+          default:
+            return NextResponse.json({ error: "알 수 없는 통계 유형" }, { status: 400 })
+        }
+
+        return NextResponse.json({ data: result, coins: spender.coins })
       }
 
       default:

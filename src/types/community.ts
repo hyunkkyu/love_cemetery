@@ -41,10 +41,15 @@ export interface SajuProfile {
   nickname: string
   birthDate: string
   birthTime: string
+  gender?: "M" | "F"
   dominantElement: string
   elementBalance: Record<string, number>
+  mbti?: string
+  ilju?: string
+  yearBranch?: string
   lookingFor: string
   introduction: string
   isPublic: boolean
   createdAt: string
+  updatedAt?: string
 }

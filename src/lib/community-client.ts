@@ -48,4 +48,6 @@ export const dbSajuProfile = {
   register: (userId: string, nickname: string, profile: Record<string, unknown>) =>
     callAPI("saju.register", userId, { nickname, profile }),
   findMatches: (userId: string) => callAPI("saju.findMatches", userId),
+  getStats: () => callAPI("saju.stats", undefined),
+  getPremiumStat: (statType: string) => callAPI("saju.premiumStat", undefined, { statType }),
 }
