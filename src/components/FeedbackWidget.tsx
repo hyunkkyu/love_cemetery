@@ -58,9 +58,9 @@ export function FeedbackWidget() {
       {/* 플로팅 버튼 */}
       <button
         onClick={() => setOpen(!open)}
-        className="fixed bottom-6 right-6 z-50 w-12 h-12 rounded-full bg-cemetery-accent
+        className="fixed bottom-20 lg:bottom-6 right-4 z-[190] w-11 h-11 rounded-full bg-cemetery-accent
           hover:bg-cemetery-accent-dim shadow-lg shadow-cemetery-accent/30
-          flex items-center justify-center text-xl transition-all cute-press
+          flex items-center justify-center text-lg transition-all cute-press
           hover:scale-110"
       >
         {open ? "✕" : "💌"}
@@ -68,7 +68,7 @@ export function FeedbackWidget() {
 
       {/* 패널 */}
       {open && (
-        <div className="fixed bottom-20 right-6 z-50 w-80 bg-cemetery-card border border-cemetery-border
+        <div className="fixed bottom-32 lg:bottom-20 right-4 z-[190] w-[calc(100vw-2rem)] sm:w-80 bg-cemetery-card border border-cemetery-border
           rounded-2xl shadow-2xl shadow-black/50 overflow-hidden animate-fade-in">
 
           <div className="px-4 py-3 border-b border-cemetery-border bg-cemetery-surface/50">
