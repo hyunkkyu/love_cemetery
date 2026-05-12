@@ -8,16 +8,39 @@ import { calculateManseryeok, calculateCompatibility } from "@/lib/manseryeok"
 import { DateInput } from "@/components/DateInput"
 import { GenderSelect } from "@/components/GenderSelect"
 
+const REASON_OPTIONS = [
+  "성격 차이", "가치관 충돌", "소통 부족", "권태기", "장거리",
+  "타이밍 안 맞음", "집착/구속", "무관심", "바람/외도", "금전 문제",
+  "가족 반대", "미래관 차이", "자존감 하락", "감정 소진", "기타 (직접 입력)",
+]
+
+const EPITAPH_OPTIONS = [
+  "다시는 이런 사랑 없을 거야", "좋은 추억만 가져갈게",
+  "네 덕분에 성장했어", "후회는 없어, 그냥 아플 뿐",
+  "사랑했지만 함께할 수 없었어", "잘 가, 행복해",
+  "내가 부족했나 봐", "운명이 아니었을 뿐",
+  "다음 생에 다시 만나자", "기타 (직접 입력)",
+]
+
+const PERSONA_OPTIONS = [
+  "다정한", "무뚝뚝한", "유머있는", "츤데레", "4차원",
+  "감성적", "이성적", "활발한", "조용한", "리더형",
+  "자유로운", "계획적인", "눈치빠른", "둔감한", "기타 (직접 입력)",
+]
+
 interface GraveFormProps {
   onSave: (grave: Grave) => void | Promise<void>
   initial?: Partial<Grave>
+  initialGrade?: GraveGrade
 }
 
-export function GraveForm({ onSave, initial }: GraveFormProps) {
+export function GraveForm({ onSave, initial, initialGrade }: GraveFormProps) {
   const [step, setStep] = useState(1)
+  const effectiveGrade = initialGrade || (initial?.grade as GraveGrade) || "public"
+
   const [form, setForm] = useState({
     nickname: initial?.nickname || "",
-    grade: (initial?.grade || "public") as GraveGrade,
+    grade: effectiveGrade,
     birthDate: initial?.birthDate || "",
     birthTime: initial?.birthTime || "",
     gender: (initial as Record<string, unknown>)?.gender as string || "",
@@ -35,6 +58,28 @@ export function GraveForm({ onSave, initial }: GraveFormProps) {
   const [chatFile, setChatFile] = useState<File | null>(null)
   const [processing, setProcessing] = useState(false)
   const photoRef = useRef<HTMLInputElement>(null)
+
+  // Selection states for chips
+  const [selectedReasons, setSelectedReasons] = useState<string[]>(() => {
+    if (!initial?.graveReason) return []
+    return initial.graveReason.split(", ").filter(Boolean)
+  })
+  const [reasonCustom, setReasonCustom] = useState("")
+  const [selectedEpitaph, setSelectedEpitaph] = useState<string>(() => {
+    if (!initial?.epitaph) return ""
+    if (EPITAPH_OPTIONS.includes(initial.epitaph)) return initial.epitaph
+    return "기타 (직접 입력)"
+  })
+  const [epitaphCustom, setEpitaphCustom] = useState(() => {
+    if (!initial?.epitaph) return ""
+    if (EPITAPH_OPTIONS.includes(initial.epitaph)) return ""
+    return initial.epitaph
+  })
+  const [selectedPersonas, setSelectedPersonas] = useState<string[]>(() => {
+    if (!initial?.persona) return []
+    return initial.persona.split(", ").filter(Boolean)
+  })
+  const [personaCustom, setPersonaCustom] = useState("")
 
   const hourOptions = [
     { value: "", label: "모름 (정오로 계산)" },
@@ -84,6 +129,65 @@ export function GraveForm({ onSave, initial }: GraveFormProps) {
       img.src = reader.result as string
     }
     reader.readAsDataURL(file)
+  }
+
+  // Chip toggle helpers
+  const toggleReason = (reason: string) => {
+    setSelectedReasons((prev) => {
+      const next = prev.includes(reason)
+        ? prev.filter((r) => r !== reason)
+        : [...prev, reason]
+      // Update form value
+      const values = next.filter((r) => r !== "기타 (직접 입력)")
+      if (next.includes("기타 (직접 입력)") && reasonCustom) {
+        values.push(reasonCustom)
+      }
+      setForm((f) => ({ ...f, graveReason: values.join(", ") }))
+      return next
+    })
+  }
+
+  const updateReasonCustom = (value: string) => {
+    setReasonCustom(value)
+    const values = selectedReasons.filter((r) => r !== "기타 (직접 입력)")
+    if (value) values.push(value)
+    setForm((f) => ({ ...f, graveReason: values.join(", ") }))
+  }
+
+  const selectEpitaph = (epitaph: string) => {
+    setSelectedEpitaph(epitaph)
+    if (epitaph === "기타 (직접 입력)") {
+      setForm((f) => ({ ...f, epitaph: epitaphCustom }))
+    } else {
+      setForm((f) => ({ ...f, epitaph }))
+      setEpitaphCustom("")
+    }
+  }
+
+  const updateEpitaphCustom = (value: string) => {
+    setEpitaphCustom(value)
+    setForm((f) => ({ ...f, epitaph: value }))
+  }
+
+  const togglePersona = (persona: string) => {
+    setSelectedPersonas((prev) => {
+      const next = prev.includes(persona)
+        ? prev.filter((p) => p !== persona)
+        : [...prev, persona]
+      const values = next.filter((p) => p !== "기타 (직접 입력)")
+      if (next.includes("기타 (직접 입력)") && personaCustom) {
+        values.push(personaCustom)
+      }
+      setForm((f) => ({ ...f, persona: values.join(", ") }))
+      return next
+    })
+  }
+
+  const updatePersonaCustom = (value: string) => {
+    setPersonaCustom(value)
+    const values = selectedPersonas.filter((p) => p !== "기타 (직접 입력)")
+    if (value) values.push(value)
+    setForm((f) => ({ ...f, persona: values.join(", ") }))
   }
 
   const handleSubmit = async () => {
@@ -193,6 +297,15 @@ export function GraveForm({ onSave, initial }: GraveFormProps) {
       {/* Step 1: 기본 정보 */}
       {step === 1 && (
         <div className="space-y-6">
+          {/* 선택된 등급 뱃지 */}
+          {initialGrade && (
+            <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm ${gradeInfo.bg} border border-cemetery-border`}>
+              <span>{gradeInfo.emoji}</span>
+              <span className={gradeInfo.color}>{gradeInfo.name}</span>
+              <span className="text-yellow-400 text-xs">+{gradeInfo.coins}🪙</span>
+            </div>
+          )}
+
           {/* 사진 + 닉네임 + 사인 */}
           <div className="flex gap-6 items-start">
             <div className="flex-shrink-0">
@@ -251,31 +364,33 @@ export function GraveForm({ onSave, initial }: GraveFormProps) {
             </div>
           </div>
 
-          {/* 묘지 등급 선택 */}
-          <div>
-            <label className="block text-sm text-cemetery-ghost mb-2">묘지 등급 선택 *</label>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {(Object.entries(GRAVE_GRADES) as [GraveGrade, typeof gradeInfo][]).map(
-                ([key, info]) => (
-                  <button
-                    key={key}
-                    type="button"
-                    onClick={() => setForm((prev) => ({ ...prev, grade: key }))}
-                    className={`p-3 rounded-xl border text-center transition-all ${
-                      form.grade === key
-                        ? `border-cemetery-accent ${info.bg} ring-1 ring-cemetery-accent`
-                        : "border-cemetery-border bg-cemetery-surface hover:border-cemetery-ghost/30"
-                    }`}
-                  >
-                    <div className="text-2xl mb-1">{info.emoji}</div>
-                    <div className={`text-sm font-semibold ${info.color}`}>{info.name}</div>
-                    <div className="text-xs text-cemetery-ghost/50 mt-1">{info.description}</div>
-                    <div className="text-xs text-yellow-400 mt-2">🪙 +{info.coins}/묘비</div>
-                  </button>
-                )
-              )}
+          {/* 묘지 등급 선택 - only if no initialGrade */}
+          {!initialGrade && (
+            <div>
+              <label className="block text-sm text-cemetery-ghost mb-2">묘지 등급 선택 *</label>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {(Object.entries(GRAVE_GRADES) as [GraveGrade, typeof gradeInfo][]).map(
+                  ([key, info]) => (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => setForm((prev) => ({ ...prev, grade: key }))}
+                      className={`p-3 rounded-xl border text-center transition-all ${
+                        form.grade === key
+                          ? `border-cemetery-accent ${info.bg} ring-1 ring-cemetery-accent`
+                          : "border-cemetery-border bg-cemetery-surface hover:border-cemetery-ghost/30"
+                      }`}
+                    >
+                      <div className="text-2xl mb-1">{info.emoji}</div>
+                      <div className={`text-sm font-semibold ${info.color}`}>{info.name}</div>
+                      <div className="text-xs text-cemetery-ghost/50 mt-1">{info.description}</div>
+                      <div className="text-xs text-yellow-400 mt-2">🪙 +{info.coins}/묘비</div>
+                    </button>
+                  )
+                )}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       )}
 
@@ -352,45 +467,117 @@ export function GraveForm({ onSave, initial }: GraveFormProps) {
             선택사항은 나중에 수정할 수 있어요
           </p>
 
-          {/* 이 묘지에 묻힌 사연 */}
+          {/* 이별 사유 - multi-select chips */}
           <div>
-            <label className="block text-sm text-cemetery-ghost mb-1">📝 이 묘지에 묻힌 이유 (선택)</label>
-            <textarea
-              value={form.graveReason}
-              onChange={(e) => update("graveReason", e.target.value)}
-              placeholder="이 사람과의 연애가 여기 묻히게 된 사연을 적어주세요. 만남부터 이별까지, 좋았던 점, 힘들었던 점, 배운 점 등... 자세히 적을수록 AI 분석이 정확해져요."
-              rows={4}
-              className="w-full px-3 py-2 bg-cemetery-surface border border-cemetery-border rounded-xl
-                text-cemetery-text placeholder-cemetery-ghost/40 focus:border-cemetery-accent focus:outline-none resize-none"
-            />
+            <label className="block text-sm text-cemetery-ghost mb-2">📝 이별 사유 (선택, 복수 선택 가능)</label>
+            <div className="flex flex-wrap gap-2">
+              {REASON_OPTIONS.map((option) => {
+                const isCustom = option === "기타 (직접 입력)"
+                const isSelected = selectedReasons.includes(option)
+                return (
+                  <button
+                    key={option}
+                    type="button"
+                    onClick={() => toggleReason(option)}
+                    className={`px-3 py-1.5 rounded-full text-xs transition-all ${
+                      isSelected
+                        ? isCustom
+                          ? "bg-yellow-500/20 border border-yellow-500/30 text-yellow-300"
+                          : "bg-cemetery-accent text-white"
+                        : "bg-cemetery-surface border border-cemetery-border text-cemetery-ghost hover:border-cemetery-ghost/30"
+                    }`}
+                  >
+                    {option}
+                  </button>
+                )
+              })}
+            </div>
+            {selectedReasons.includes("기타 (직접 입력)") && (
+              <input
+                type="text"
+                value={reasonCustom}
+                onChange={(e) => updateReasonCustom(e.target.value)}
+                placeholder="직접 입력..."
+                className="mt-2 w-full px-3 py-2 bg-cemetery-surface border border-yellow-500/30 rounded-xl
+                  text-cemetery-text placeholder-cemetery-ghost/40 focus:border-yellow-400 focus:outline-none text-sm"
+              />
+            )}
           </div>
 
-          {/* 비문 */}
+          {/* 비문 - single select */}
           <div>
-            <label className="block text-sm text-cemetery-ghost mb-1">비문 (선택)</label>
-            <textarea
-              value={form.epitaph}
-              onChange={(e) => update("epitaph", e.target.value)}
-              placeholder="묘비에 새길 한 마디를 남겨주세요..."
-              rows={2}
-              className="w-full px-3 py-2 bg-cemetery-surface border border-cemetery-border rounded-xl
-                text-cemetery-text placeholder-cemetery-ghost/40 focus:border-cemetery-accent focus:outline-none resize-none"
-            />
+            <label className="block text-sm text-cemetery-ghost mb-2">🪦 비문 (선택)</label>
+            <div className="flex flex-wrap gap-2">
+              {EPITAPH_OPTIONS.map((option) => {
+                const isCustom = option === "기타 (직접 입력)"
+                const isSelected = selectedEpitaph === option
+                return (
+                  <button
+                    key={option}
+                    type="button"
+                    onClick={() => selectEpitaph(option)}
+                    className={`px-3 py-1.5 rounded-full text-xs transition-all ${
+                      isSelected
+                        ? isCustom
+                          ? "bg-yellow-500/20 border border-yellow-500/30 text-yellow-300"
+                          : "bg-cemetery-accent text-white"
+                        : "bg-cemetery-surface border border-cemetery-border text-cemetery-ghost hover:border-cemetery-ghost/30"
+                    }`}
+                  >
+                    {option}
+                  </button>
+                )
+              })}
+            </div>
+            {selectedEpitaph === "기타 (직접 입력)" && (
+              <input
+                type="text"
+                value={epitaphCustom}
+                onChange={(e) => updateEpitaphCustom(e.target.value)}
+                placeholder="묘비에 새길 한 마디..."
+                className="mt-2 w-full px-3 py-2 bg-cemetery-surface border border-yellow-500/30 rounded-xl
+                  text-cemetery-text placeholder-cemetery-ghost/40 focus:border-yellow-400 focus:outline-none text-sm"
+              />
+            )}
           </div>
 
-          {/* 페르소나 */}
+          {/* 성격/말투 - multi-select chips */}
           <div>
-            <label className="block text-sm text-cemetery-ghost mb-1">👻 상대의 성격/말투 (선택)</label>
-            <textarea
-              value={form.persona}
-              onChange={(e) => update("persona", e.target.value)}
-              placeholder="예: ISTJ, 무뚝뚝하지만 가끔 애교부림, 반말 위주, 'ㅋㅋ' 대신 'ㅎㅎ' 사용, 이모티콘 잘 안 씀, 가끔 츤데레..."
-              rows={3}
-              className="w-full px-3 py-2 bg-cemetery-surface border border-cemetery-border rounded-xl
-                text-cemetery-text placeholder-cemetery-ghost/40 focus:border-cemetery-accent focus:outline-none resize-none"
-            />
+            <label className="block text-sm text-cemetery-ghost mb-2">👻 상대의 성격/말투 (선택, 복수 선택 가능)</label>
+            <div className="flex flex-wrap gap-2">
+              {PERSONA_OPTIONS.map((option) => {
+                const isCustom = option === "기타 (직접 입력)"
+                const isSelected = selectedPersonas.includes(option)
+                return (
+                  <button
+                    key={option}
+                    type="button"
+                    onClick={() => togglePersona(option)}
+                    className={`px-3 py-1.5 rounded-full text-xs transition-all ${
+                      isSelected
+                        ? isCustom
+                          ? "bg-yellow-500/20 border border-yellow-500/30 text-yellow-300"
+                          : "bg-cemetery-accent text-white"
+                        : "bg-cemetery-surface border border-cemetery-border text-cemetery-ghost hover:border-cemetery-ghost/30"
+                    }`}
+                  >
+                    {option}
+                  </button>
+                )
+              })}
+            </div>
+            {selectedPersonas.includes("기타 (직접 입력)") && (
+              <input
+                type="text"
+                value={personaCustom}
+                onChange={(e) => updatePersonaCustom(e.target.value)}
+                placeholder="직접 입력..."
+                className="mt-2 w-full px-3 py-2 bg-cemetery-surface border border-yellow-500/30 rounded-xl
+                  text-cemetery-text placeholder-cemetery-ghost/40 focus:border-yellow-400 focus:outline-none text-sm"
+              />
+            )}
             <p className="text-xs text-cemetery-ghost/40 mt-1">
-              상대의 말투와 성격을 자세히 적을수록 AI 대화가 더 자연스러워져요
+              상대의 말투와 성격을 선택할수록 AI 대화가 더 자연스러워져요
             </p>
           </div>
 
