@@ -83,6 +83,7 @@ export function NavBar() {
   }, [])
 
   return (
+    <>
     <nav className="border-b border-cemetery-border bg-cemetery-surface/80 backdrop-blur-sm sticky top-0 z-50">
       <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
         <a href="/" className="flex items-center gap-2 flex-shrink-0">
@@ -134,54 +135,56 @@ export function NavBar() {
         </div>
       </div>
 
-      {/* 모바일 더보기 드롭다운 (바텀 탭 위에 표시) */}
-      {menuOpen && (
-        <div className="lg:hidden fixed bottom-16 left-0 right-0 z-50 border-t border-cemetery-border bg-cemetery-surface/95 backdrop-blur-sm animate-fade-in">
-          <div className="max-w-6xl mx-auto px-4 py-3 grid grid-cols-3 gap-2">
-            {ALL_LINKS.map((link) => (
-              <a key={link.href} href={link.href} onClick={() => setMenuOpen(false)}
-                className="block px-2 py-2.5 rounded-xl text-center text-cemetery-text bg-cemetery-card hover:bg-cemetery-card/80 transition-colors">
-                <span className="block text-xs font-medium">{link.label}</span>
-                <span className="block text-[10px] text-cemetery-ghost/40 mt-0.5">{link.sub}</span>
-              </a>
-            ))}
-          </div>
-        </div>
-      )}
+    </nav>
 
-      {/* 모바일 바텀 탭 바 */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-cemetery-surface/95 backdrop-blur-sm border-t border-cemetery-border">
-        <div className="flex items-center justify-around py-2 pb-[env(safe-area-inset-bottom)]">
-          {BOTTOM_TABS.map((tab) => {
-            const isMore = tab.href === null
-            const isActive = isMore
-              ? menuOpen
-              : pathname === tab.href
-
-            return (
-              <button
-                key={tab.label}
-                onClick={() => {
-                  if (isMore) {
-                    setMenuOpen((prev) => !prev)
-                  } else {
-                    setMenuOpen(false)
-                    router.push(tab.href as string)
-                  }
-                }}
-                className={
-                  "flex flex-col items-center justify-center gap-0.5 flex-1 py-1 transition-colors " +
-                  (isActive ? "text-cemetery-accent" : "text-cemetery-ghost/50")
-                }
-              >
-                <span className="text-lg leading-none">{tab.icon}</span>
-                <span className="text-[10px] leading-none">{tab.label}</span>
-              </button>
-            )
-          })}
+    {/* 모바일 더보기 드롭다운 (nav 밖, 바텀 탭 위에 표시) */}
+    {menuOpen && (
+      <div className="lg:hidden fixed bottom-14 left-0 right-0 z-[200] border-t border-cemetery-border bg-cemetery-surface/98 backdrop-blur-md animate-fade-in">
+        <div className="max-w-6xl mx-auto px-4 py-3 grid grid-cols-3 gap-2">
+          {ALL_LINKS.map((link) => (
+            <a key={link.href} href={link.href} onClick={() => setMenuOpen(false)}
+              className="block px-2 py-2.5 rounded-xl text-center text-cemetery-text bg-cemetery-card hover:bg-cemetery-card/80 transition-colors">
+              <span className="block text-xs font-medium">{link.label}</span>
+              <span className="block text-[10px] text-cemetery-ghost/40 mt-0.5">{link.sub}</span>
+            </a>
+          ))}
         </div>
       </div>
-    </nav>
+    )}
+
+    {/* 모바일 바텀 탭 바 */}
+    <div className="lg:hidden fixed bottom-0 left-0 right-0 z-[200] bg-cemetery-surface/98 backdrop-blur-md border-t border-cemetery-border">
+      <div className="flex items-center justify-around py-2 pb-[env(safe-area-inset-bottom)]">
+        {BOTTOM_TABS.map((tab) => {
+          const isMore = tab.href === null
+          const isActive = isMore
+            ? menuOpen
+            : pathname === tab.href
+
+          return (
+            <button
+              key={tab.label}
+              onClick={() => {
+                if (isMore) {
+                  setMenuOpen((prev) => !prev)
+                } else {
+                  setMenuOpen(false)
+                  router.push(tab.href as string)
+                }
+              }}
+              className={
+                "flex flex-col items-center justify-center gap-0.5 flex-1 py-1 transition-colors " +
+                (isActive ? "text-cemetery-accent" : "text-cemetery-ghost/50")
+              }
+            >
+              <span className="text-lg leading-none">{tab.icon}</span>
+              <span className="text-[10px] leading-none">{tab.label}</span>
+            </button>
+          )
+        })}
+      </div>
+    </div>
+    </>
   )
 }
 
