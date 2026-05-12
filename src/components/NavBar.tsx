@@ -192,6 +192,7 @@ function AuthButton({ session, status, router }: {
   if (session?.user) {
     return (
       <div className="flex items-center gap-2">
+        <CoinBadge />
         <a href="/mypage" className="text-cemetery-accent text-xs hidden sm:inline hover:underline">👻 {session.user.name}</a>
         <button onClick={() => signOut({ callbackUrl: "/" })}
           className="px-2.5 py-1 text-xs bg-cemetery-card border border-cemetery-border hover:border-red-500/50 rounded-lg transition-colors">
@@ -205,5 +206,25 @@ function AuthButton({ session, status, router }: {
       className="px-3 py-1 text-xs bg-cemetery-accent hover:bg-cemetery-accent-dim rounded-lg transition-colors">
       입장
     </button>
+  )
+}
+
+function CoinBadge() {
+  const [coins, setCoins] = useState<number | null>(null)
+
+  useEffect(() => {
+    fetch("/api/data", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "user.get" }),
+    }).then(r => r.json()).then(d => setCoins(d.data?.coins ?? null)).catch(() => {})
+  }, [])
+
+  if (coins === null) return null
+
+  return (
+    <a href="/mypage" className="text-yellow-400 text-xs font-bold hover:text-yellow-300 transition-colors">
+      🪙 {coins.toLocaleString()}
+    </a>
   )
 }
