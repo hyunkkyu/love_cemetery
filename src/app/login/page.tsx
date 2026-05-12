@@ -1,15 +1,24 @@
 "use client"
 
-import { useState } from "react"
+import { useState, Suspense } from "react"
 import { signIn } from "next-auth/react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 
 export default function LoginPage() {
+  return <Suspense><LoginInner /></Suspense>
+}
+
+function LoginInner() {
   const [nickname, setNickname] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const callbackUrl = (() => {
+    const v = searchParams.get("callbackUrl") || "/"
+    return v.startsWith("/") ? v : "/"
+  })()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -34,16 +43,16 @@ export default function LoginPage() {
       } else if (result.error) {
         setError("닉네임 또는 비밀번호를 다시 확인해주세요")
       } else if (result.url) {
-        router.push("/")
+        router.push(callbackUrl)
         router.refresh()
       } else {
-        router.push("/")
+        router.push(callbackUrl)
         router.refresh()
       }
     } catch (err: unknown) {
       // NextAuth v5에서 성공 시에도 redirect 에러를 throw할 수 있음
       if (err && typeof err === "object" && "url" in err) {
-        router.push("/")
+        router.push(callbackUrl)
         router.refresh()
         return
       }
@@ -64,7 +73,7 @@ export default function LoginPage() {
           </h1>
           <p className="text-cemetery-ghost text-sm">
             닉네임과 입장 암호로 입장하세요<br />
-            계정이 없다면 <a href="/register" className="text-cemetery-accent hover:underline">회원가입</a>해주세요
+            계정이 없다면 <a href={"/register" + (callbackUrl !== "/" ? "?callbackUrl=" + encodeURIComponent(callbackUrl) : "")} className="text-cemetery-accent hover:underline">회원가입</a>해주세요
           </p>
         </div>
 
@@ -114,7 +123,7 @@ export default function LoginPage() {
           </button>
 
           <div className="flex justify-between text-xs text-cemetery-ghost/40">
-            <a href="/register" className="hover:text-cemetery-accent transition-colors">
+            <a href={"/register" + (callbackUrl !== "/" ? "?callbackUrl=" + encodeURIComponent(callbackUrl) : "")} className="hover:text-cemetery-accent transition-colors">
               👻 회원가입
             </a>
             <a href="/forgot-password" className="hover:text-cemetery-accent transition-colors">

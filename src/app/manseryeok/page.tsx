@@ -103,6 +103,31 @@ export default function ManseryeokPage() {
     loadSavedChats()
   }, [userId])
 
+  // 로그인 후 분석 결과 복원 (회원가입/로그인 후 돌아온 경우)
+  useEffect(() => {
+    if (!userId) return
+    const raw = sessionStorage.getItem("ms-pending")
+    if (!raw) return
+    sessionStorage.removeItem("ms-pending")
+    try {
+      const pending = JSON.parse(raw)
+      if (pending.birthDate) setBirthDate(pending.birthDate)
+      if (pending.birthTime) setBirthTime(pending.birthTime)
+      if (pending.gender) setGender(pending.gender)
+      if (pending.name) setName(pending.name)
+      if (pending.selectedCategory) setSelectedCategory(pending.selectedCategory)
+      if (pending.customQuestion) setCustomQuestion(pending.customQuestion)
+      if (pending.analysis) setAnalysis(pending.analysis)
+      // 사주 재계산
+      if (pending.birthDate) {
+        const [y, m, d] = pending.birthDate.split("-").map(Number)
+        const hour = pending.birthTime ? parseInt(pending.birthTime) : 12
+        setResult(calculateManseryeok(y, m, d, hour))
+      }
+      setMyProfileLoaded(true) // 프로필 자동 로딩 억제
+    } catch { /* ignore */ }
+  }, [userId])
+
   // 본인 사주 프로필 자동 불러오기
   useEffect(() => {
     if (!userId || myProfileLoaded) return
@@ -191,6 +216,16 @@ export default function ManseryeokPage() {
       loadSavedChats()
       alert("영구 보관 완료!")
     } catch { alert("오류가 발생했습니다") }
+  }
+
+  // 비로그인 시 분석 결과를 sessionStorage에 저장 (회원가입 후 복원용)
+  const savePendingAnalysis = () => {
+    try {
+      sessionStorage.setItem("ms-pending", JSON.stringify({
+        birthDate, birthTime, gender, name,
+        selectedCategory, customQuestion, analysis,
+      }))
+    } catch { /* ignore */ }
   }
 
   // 기존 채팅이 있으면 저장 후 리셋
@@ -411,17 +446,25 @@ export default function ManseryeokPage() {
           {analysis && !loading && (
             <div className="relative">
               <AnalysisResult analysis={analysis} onReanalyze={() => { setAnalysis(""); requestAnalysis() }} />
-              {/* 비로그인: 반절만 보이고 블러 + 로그인 유도 */}
+              {/* 비로그인: 60%까지 보이고 블러 + 가입 유도 */}
               {!userId && (
-                <div className="absolute inset-0 top-[40%] flex flex-col items-center justify-end pb-8 rounded-b-2xl"
-                  style={{ background: "linear-gradient(to bottom, transparent 0%, rgba(10,10,18,0.95) 40%)" }}>
+                <div className="absolute inset-0 top-[60%] flex flex-col items-center justify-end pb-8 rounded-b-2xl"
+                  style={{ background: "linear-gradient(to bottom, transparent 0%, rgba(10,10,18,0.97) 50%)" }}>
                   <div className="text-center space-y-3 px-4">
-                    <p className="text-cemetery-heading font-bold text-sm">전체 분석 결과를 보려면 로그인하세요</p>
-                    <p className="text-cemetery-ghost/50 text-xs">가입하면 500코인 + 무제한 분석!</p>
-                    <a href="/login"
-                      className="inline-block px-6 py-2.5 bg-cemetery-accent hover:bg-cemetery-accent-dim rounded-xl text-sm font-semibold transition-colors">
-                      로그인하고 전체 보기
-                    </a>
+                    <p className="text-cemetery-heading font-bold text-sm">전체 결과 + 추가 질문은 회원만!</p>
+                    <p className="text-cemetery-ghost/50 text-xs">가입하면 500코인 + 무제한 분석</p>
+                    <div className="flex flex-col sm:flex-row gap-2 justify-center">
+                      <a href="/register?callbackUrl=/manseryeok"
+                        onClick={() => savePendingAnalysis()}
+                        className="px-6 py-2.5 bg-cemetery-accent hover:bg-cemetery-accent-dim rounded-xl text-sm font-semibold transition-colors">
+                        회원가입하고 전체 보기
+                      </a>
+                      <a href="/login?callbackUrl=/manseryeok"
+                        onClick={() => savePendingAnalysis()}
+                        className="px-6 py-2.5 bg-cemetery-surface border border-cemetery-border hover:border-cemetery-accent rounded-xl text-xs text-cemetery-ghost transition-colors">
+                        이미 계정이 있어요
+                      </a>
+                    </div>
                   </div>
                 </div>
               )}

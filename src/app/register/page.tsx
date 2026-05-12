@@ -1,11 +1,20 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { signIn } from "next-auth/react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 
 export default function RegisterPage() {
+  return <Suspense><RegisterInner /></Suspense>
+}
+
+function RegisterInner() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const callbackUrl = (() => {
+    const v = searchParams.get("callbackUrl") || "/"
+    return v.startsWith("/") ? v : "/"
+  })()
   const [nickname, setNickname] = useState("")
   const [nicknameOk, setNicknameOk] = useState<boolean | null>(null)
   const [email, setEmail] = useState("")
@@ -53,8 +62,8 @@ export default function RegisterPage() {
       if (data.error) { setError(data.error); setLoading(false); return }
 
       const result = await signIn("credentials", { nickname, password, redirect: false })
-      if (result?.ok) { router.push("/"); router.refresh() }
-      else router.push("/login")
+      if (result?.ok) { router.push(callbackUrl); router.refresh() }
+      else router.push("/login" + (callbackUrl !== "/" ? "?callbackUrl=" + encodeURIComponent(callbackUrl) : ""))
     } catch {
       setError("회원가입 중 오류가 발생했습니다")
     }
@@ -135,7 +144,7 @@ export default function RegisterPage() {
           </button>
 
           <p className="text-center text-xs text-cemetery-ghost/40">
-            이미 계정이 있나요? <a href="/login" className="text-cemetery-accent hover:underline">로그인</a>
+            이미 계정이 있나요? <a href={"/login" + (callbackUrl !== "/" ? "?callbackUrl=" + encodeURIComponent(callbackUrl) : "")} className="text-cemetery-accent hover:underline">로그인</a>
           </p>
         </div>
       </div>

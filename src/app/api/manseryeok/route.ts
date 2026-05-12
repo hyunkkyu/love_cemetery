@@ -10,9 +10,18 @@ export async function POST(request: NextRequest) {
   try {
     const session = await auth()
     const uid = (session?.user as { id?: string })?.id
-    if (!uid) return NextResponse.json({ interpretation: "⚠️ 로그인이 필요한 기능입니다." }, { status: 401 })
+
+    // 비로그인: IP 기반 1회 무료 허용
     const { checkRateLimit } = await import("@/lib/rate-limit")
-    if (!checkRateLimit(uid, 5, 60000)) return NextResponse.json({ interpretation: "⚠️ 너무 많은 요청입니다. 1분 후 다시 시도해주세요." }, { status: 429 })
+    if (!uid) {
+      const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown"
+      const guestKey = `guest-${ip}`
+      if (!checkRateLimit(guestKey, 1, 24 * 60 * 60 * 1000)) {
+        return NextResponse.json({ interpretation: "⚠️ 비로그인 무료 분석은 1회까지입니다. 회원가입하면 무제한!" }, { status: 401 })
+      }
+    } else {
+      if (!checkRateLimit(uid, 5, 60000)) return NextResponse.json({ interpretation: "⚠️ 너무 많은 요청입니다. 1분 후 다시 시도해주세요." }, { status: 429 })
+    }
     const body = await request.json()
     const { manseryeok, birthDate, gender, name, category, question } = body
     const genderLabel = gender === "M" ? "남성" : gender === "F" ? "여성" : "미입력"
