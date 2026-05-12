@@ -99,175 +99,177 @@ export default function GraveDetailPage({ params }: { params: Promise<{ id: stri
   }
 
   return (
-    <div className="space-y-8">
-      {/* 묘비 헤더 + 드래그 아이템 영역 */}
-      <div className="relative bg-cemetery-card border-2 border-cemetery-border/60 rounded-2xl overflow-visible">
-        {/* 편집 버튼 */}
-        <button
-          onClick={() => setEditing(true)}
-          className="absolute top-3 right-3 z-30 px-3 py-1.5 text-xs bg-cemetery-surface/80 border border-cemetery-border
-            rounded-lg text-cemetery-ghost hover:text-cemetery-heading hover:border-cemetery-accent transition-all"
-        >
-          ✏️ 편집
-        </button>
+    <div className="space-y-6">
+      {/* 2단 레이아웃: 프로필(좌) + AI 해설(우) */}
+      <div className="flex flex-col lg:flex-row gap-6">
+        {/* 좌측: 프로필 + 아이템 */}
+        <div className="lg:w-[380px] flex-shrink-0 space-y-4">
+          <div className="relative bg-cemetery-card border-2 border-cemetery-border/60 rounded-2xl overflow-visible">
+            {/* 편집 버튼 */}
+            <button
+              onClick={() => setEditing(true)}
+              className="absolute top-2 right-2 z-30 px-2 py-1 text-[10px] bg-cemetery-surface/80 border border-cemetery-border
+                rounded-lg text-cemetery-ghost hover:text-cemetery-heading hover:border-cemetery-accent transition-all"
+            >
+              ✏️
+            </button>
 
-        {/* 묘비 콘텐츠 */}
-        <div className="relative z-10 text-center py-10">
-          <div className="candle-glow inline-block text-2xl mb-4">🕯️</div>
+            {/* 묘비 콘텐츠 (컴팩트) */}
+            <div className="relative z-10 text-center py-6 px-4">
+              <div className="candle-glow inline-block text-lg mb-2">🕯️</div>
 
-          {grave.photo ? (
-            <div className="mx-auto w-24 h-24 rounded-full overflow-hidden border-2 border-cemetery-ghost/30 mb-3
-              shadow-[0_0_20px_rgba(107,92,231,0.3)]">
-              <img src={grave.photo} alt={grave.nickname} className="w-full h-full object-cover grayscale-[30%]" />
+              {grave.photo ? (
+                <div className="mx-auto w-16 h-16 rounded-full overflow-hidden border-2 border-cemetery-ghost/30 mb-2
+                  shadow-[0_0_15px_rgba(107,92,231,0.3)]">
+                  <img src={grave.photo} alt={grave.nickname} className="w-full h-full object-cover grayscale-[30%]" />
+                </div>
+              ) : (
+                <div className="mx-auto w-16 h-16 rounded-full bg-cemetery-surface/50 flex items-center justify-center mb-2 border border-cemetery-border">
+                  <span className="text-2xl ghost-float">👻</span>
+                </div>
+              )}
+
+              <h1 className="font-gothic text-2xl font-black text-cemetery-heading">
+                {grave.nickname}
+              </h1>
+              <p className="text-cemetery-ghost/60 mt-1 text-xs">
+                {grave.relationshipStart} — {grave.relationshipEnd}
+              </p>
+              {grave.epitaph && (
+                <p className="text-cemetery-ghost/70 mt-2 italic text-sm">
+                  &ldquo;{grave.epitaph}&rdquo;
+                </p>
+              )}
+              <p className="text-cemetery-ghost/40 mt-1 text-xs">
+                사인: {grave.causeOfDeath || "미상"}
+              </p>
+              {grave.graveReason && (
+                <p className="text-cemetery-ghost/30 mt-1 text-[11px] line-clamp-2">
+                  📝 {grave.graveReason}
+                </p>
+              )}
             </div>
-          ) : (
-            <div className="mx-auto w-24 h-24 rounded-full bg-cemetery-surface/50 flex items-center justify-center mb-3 border border-cemetery-border">
-              <span className="text-4xl ghost-float">👻</span>
+
+            {/* 드래그 아이템 (프로필 위 겹침) */}
+            <div className="absolute inset-0 z-20 pointer-events-none">
+              <div className="pointer-events-auto w-full h-full">
+                <DraggableItems graveId={grave.id} />
+              </div>
+            </div>
+          </div>
+
+          {/* 아이템 꾸미기 (프로필 바로 아래) */}
+          <ItemEquipPanel graveId={grave.id} />
+
+          {/* 궁합 점수 (컴팩트) */}
+          {grave.compatibility && (
+            <div className="bg-cemetery-card border border-cemetery-border rounded-2xl p-4 text-center">
+              <div className="text-3xl font-bold text-cemetery-accent">{grave.compatibility.score}%</div>
+              <p className="text-cemetery-ghost/50 text-xs mt-1">{grave.compatibility.elementHarmony}</p>
+              <ShareCard
+                score={grave.compatibility.score}
+                personA={session?.user?.name || "나"}
+                personB={grave.nickname}
+                elementHarmony={grave.compatibility.elementHarmony || ""}
+                strengths={grave.compatibility.strengths ?? []}
+                type="grave"
+              />
             </div>
           )}
-
-          <h1 className="font-gothic text-4xl font-black text-cemetery-heading">
-            {grave.nickname}
-          </h1>
-          <p className="text-cemetery-ghost mt-2 font-gothic">
-            {grave.relationshipStart} — {grave.relationshipEnd}
-          </p>
-          {grave.epitaph && (
-            <p className="text-cemetery-ghost/80 mt-4 italic text-lg max-w-md mx-auto">
-              &ldquo;{grave.epitaph}&rdquo;
-            </p>
-          )}
-          <p className="text-cemetery-ghost/50 mt-3 text-sm">
-            사인: {grave.causeOfDeath || "미상"}
-          </p>
-          {grave.graveReason && (
-            <p className="text-cemetery-ghost/40 mt-2 text-xs max-w-md mx-auto line-clamp-2">
-              📝 {grave.graveReason}
-            </p>
-          )}
-          <p className="text-cemetery-ghost/30 mt-2 text-[10px]">
-            아이템을 드래그해서 원하는 곳에 배치하세요
-          </p>
         </div>
 
-        {/* 드래그 아이템 (묘비 위에 겹침) */}
-        <div className="absolute inset-0 z-20 pointer-events-none">
-          <div className="pointer-events-auto w-full h-full">
-            <DraggableItems graveId={grave.id} />
-          </div>
+        {/* 우측: AI 해설 + 분석 데이터 */}
+        <div className="flex-1 min-w-0 space-y-4">
+          {/* AI 종합 해설 (메인 콘텐츠) */}
+          <section className="bg-cemetery-card border border-cemetery-border rounded-2xl p-5 space-y-3">
+            <h2 className="font-gothic text-lg text-cemetery-heading">🤖 AI 종합 해설</h2>
+            {llmAnalysis ? (
+              <div className="text-sm text-cemetery-ghost whitespace-pre-wrap leading-relaxed">
+                {llmAnalysis}
+              </div>
+            ) : analyzing ? (
+              <AnalyzingQuotes />
+            ) : (
+              <button
+                onClick={requestLlmAnalysis}
+                className="w-full py-3 bg-cemetery-accent hover:bg-cemetery-accent-dim rounded-xl transition-colors cute-press"
+              >
+                AI에게 종합 해설 요청하기
+              </button>
+            )}
+          </section>
+
+          {/* 궁합 강점/약점 */}
+          {grave.compatibility && ((grave.compatibility.strengths ?? []).length > 0 || (grave.compatibility.weaknesses ?? []).length > 0) && (
+            <section className="bg-cemetery-card border border-cemetery-border rounded-2xl p-5 space-y-3">
+              <h2 className="font-gothic text-lg text-cemetery-heading">💫 궁합 상세</h2>
+              {(grave.compatibility.strengths ?? []).length > 0 && (
+                <div>
+                  <h3 className="text-xs font-semibold text-green-400 mb-1">강점</h3>
+                  <ul className="space-y-0.5">
+                    {(grave.compatibility.strengths ?? []).map((s, i) => (
+                      <li key={i} className="text-xs text-cemetery-ghost">✦ {s}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {(grave.compatibility.weaknesses ?? []).length > 0 && (
+                <div>
+                  <h3 className="text-xs font-semibold text-red-400 mb-1">약점</h3>
+                  <ul className="space-y-0.5">
+                    {(grave.compatibility.weaknesses ?? []).map((w, i) => (
+                      <li key={i} className="text-xs text-cemetery-ghost">⚠ {w}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </section>
+          )}
+
+          {/* 만세력 (접이식) */}
+          {(grave.manseryeok || grave.myManseryeok) && (
+            <details className="bg-cemetery-card border border-cemetery-border rounded-2xl overflow-hidden">
+              <summary className="px-5 py-3 cursor-pointer text-sm font-semibold text-cemetery-heading hover:bg-cemetery-surface/30 transition-colors">
+                🔮 만세력 데이터
+              </summary>
+              <div className="px-5 py-3 space-y-4 border-t border-cemetery-border/50">
+                {grave.manseryeok && (
+                  <div>
+                    <h3 className="text-xs text-cemetery-ghost/50 mb-2">상대방</h3>
+                    <PillarDisplay result={grave.manseryeok} />
+                  </div>
+                )}
+                {grave.myManseryeok && (
+                  <div>
+                    <h3 className="text-xs text-cemetery-ghost/50 mb-2">나</h3>
+                    <PillarDisplay result={grave.myManseryeok} />
+                  </div>
+                )}
+              </div>
+            </details>
+          )}
+
+          {/* 카톡 분석 (접이식) */}
+          {grave.chatAnalysis && (
+            <details className="bg-cemetery-card border border-cemetery-border rounded-2xl overflow-hidden">
+              <summary className="px-5 py-3 cursor-pointer text-sm font-semibold text-cemetery-heading hover:bg-cemetery-surface/30 transition-colors">
+                💬 카카오톡 분석
+              </summary>
+              <div className="px-5 py-3 border-t border-cemetery-border/50">
+                <ChatStats analysis={grave.chatAnalysis} />
+              </div>
+            </details>
+          )}
+
+          {/* 동반자 코멘트 */}
+          <GraveComments graveId={grave.id} />
+
+          {/* 고인과의 대화 */}
+          <ChatEntryCard grave={grave} />
         </div>
       </div>
 
-      {/* 아이템 꾸미기 */}
-      <ItemEquipPanel graveId={grave.id} />
-
-      {/* 만세력 분석 */}
-      {grave.manseryeok && (
-        <section className="bg-cemetery-card border border-cemetery-border rounded-2xl p-6 space-y-4">
-          <h2 className="font-gothic text-xl text-cemetery-heading">
-            🔮 상대방 만세력
-          </h2>
-          <PillarDisplay result={grave.manseryeok} />
-        </section>
-      )}
-
-      {grave.myManseryeok && (
-        <section className="bg-cemetery-card border border-cemetery-border rounded-2xl p-6 space-y-4">
-          <h2 className="font-gothic text-xl text-cemetery-heading">
-            🔮 나의 만세력
-          </h2>
-          <PillarDisplay result={grave.myManseryeok} />
-        </section>
-      )}
-
-      {/* 궁합 */}
-      {grave.compatibility && (
-        <section className="bg-cemetery-card border border-cemetery-border rounded-2xl p-6 space-y-4">
-          <h2 className="font-gothic text-xl text-cemetery-heading">
-            💫 궁합 분석
-          </h2>
-          <div className="text-center">
-            <div className="text-5xl font-bold text-cemetery-accent">
-              {grave.compatibility.score}%
-            </div>
-            <p className="text-cemetery-ghost mt-1">
-              {grave.compatibility.elementHarmony}
-            </p>
-          </div>
-          {(grave.compatibility.strengths ?? []).length > 0 && (
-            <div>
-              <h3 className="text-sm font-semibold text-moss-light mb-2">강점</h3>
-              <ul className="space-y-1">
-                {(grave.compatibility.strengths ?? []).map((s, i) => (
-                  <li key={i} className="text-sm text-cemetery-ghost">✦ {s}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-          {(grave.compatibility.weaknesses ?? []).length > 0 && (
-            <div>
-              <h3 className="text-sm font-semibold text-red-400 mb-2">약점</h3>
-              <ul className="space-y-1">
-                {(grave.compatibility.weaknesses ?? []).map((w, i) => (
-                  <li key={i} className="text-sm text-cemetery-ghost">⚠ {w}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-          {/* 공유 */}
-          <ShareCard
-            score={grave.compatibility.score}
-            personA={session?.user?.name || "나"}
-            personB={grave.nickname}
-            elementHarmony={grave.compatibility.elementHarmony || ""}
-            strengths={grave.compatibility.strengths ?? []}
-            type="grave"
-          />
-        </section>
-      )}
-
-      {/* 카톡 분석 */}
-      {grave.chatAnalysis && (
-        <section className="bg-cemetery-card border border-cemetery-border rounded-2xl p-6 space-y-4">
-          <h2 className="font-gothic text-xl text-cemetery-heading">
-            💬 카카오톡 분석
-          </h2>
-          <ChatStats analysis={grave.chatAnalysis} />
-        </section>
-      )}
-
-      {/* LLM 해설 */}
-      <section className="bg-cemetery-card border border-cemetery-border rounded-2xl p-6 space-y-4">
-        <h2 className="font-gothic text-xl text-cemetery-heading">
-          🤖 AI 종합 해설
-        </h2>
-        {llmAnalysis ? (
-          <div className="prose prose-invert max-w-none text-cemetery-ghost text-sm whitespace-pre-wrap leading-relaxed">
-            {llmAnalysis}
-          </div>
-        ) : analyzing ? (
-          <AnalyzingQuotes />
-        ) : (
-          <button
-            onClick={requestLlmAnalysis}
-            className="w-full py-3 bg-cemetery-accent hover:bg-cemetery-accent-dim
-              rounded-xl transition-colors cute-press"
-          >
-            AI에게 종합 해설 요청하기
-          </button>
-        )}
-      </section>
-
-      {/* 동반자 코멘트 */}
-      <GraveComments graveId={grave.id} />
-
-      {/* 고인과의 대화 */}
-      <ChatEntryCard grave={grave} />
-
-      <a
-        href="/grave"
-        className="inline-block text-cemetery-ghost hover:text-cemetery-heading transition-colors"
-      >
+      <a href="/grave" className="inline-block text-xs text-cemetery-ghost hover:text-cemetery-heading transition-colors">
         ← 묘지로 돌아가기
       </a>
     </div>
