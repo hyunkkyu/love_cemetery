@@ -137,17 +137,41 @@ export function NavBar() {
 
     </nav>
 
-    {/* 모바일 더보기 드롭다운 (nav 밖, 바텀 탭 위에 표시) */}
+    {/* 모바일 더보기 드롭다운 (PC와 동일한 카테고리 구분) */}
     {menuOpen && (
-      <div className="lg:hidden fixed bottom-14 left-0 right-0 z-[200] border-t border-cemetery-border bg-cemetery-surface/98 backdrop-blur-md animate-fade-in">
-        <div className="max-w-6xl mx-auto px-4 py-3 grid grid-cols-3 gap-2">
-          {ALL_LINKS.map((link) => (
-            <a key={link.href} href={link.href} onClick={() => setMenuOpen(false)}
-              className="block px-2 py-2.5 rounded-xl text-center text-cemetery-text bg-cemetery-card hover:bg-cemetery-card/80 transition-colors">
-              <span className="block text-xs font-medium">{link.label}</span>
-              <span className="block text-[10px] text-cemetery-ghost/40 mt-0.5">{link.sub}</span>
-            </a>
+      <div className="lg:hidden fixed bottom-14 left-0 right-0 z-[200] border-t border-cemetery-border bg-cemetery-surface/98 backdrop-blur-md animate-fade-in max-h-[60vh] overflow-y-auto">
+        <div className="max-w-6xl mx-auto px-4 py-3 space-y-3">
+          {NAV_GROUPS.map((group) => (
+            <div key={group.label}>
+              <p className="text-[10px] text-cemetery-ghost/40 font-bold mb-1.5 px-1">{group.label}</p>
+              <div className="grid grid-cols-3 gap-1.5">
+                {group.items.map((item) => (
+                  <a key={item.href} href={item.href} onClick={() => setMenuOpen(false)}
+                    className="block px-2 py-2 rounded-xl text-center text-cemetery-text bg-cemetery-card hover:bg-cemetery-card/80 transition-colors">
+                    <span className="block text-xs font-medium">{item.label}</span>
+                    <span className="block text-[10px] text-cemetery-ghost/40 mt-0.5">{item.desc}</span>
+                  </a>
+                ))}
+              </div>
+            </div>
           ))}
+          {/* 기타 */}
+          <div>
+            <p className="text-[10px] text-cemetery-ghost/40 font-bold mb-1.5 px-1">🛠️ 기타</p>
+            <div className="grid grid-cols-3 gap-1.5">
+              {[
+                { href: "/shop", label: "🛒 상점", desc: "아이템 구매" },
+                { href: "/notice", label: "📢 공지", desc: "업데이트" },
+                { href: "/mypage", label: "👻 마이", desc: "내 정보" },
+              ].map((link) => (
+                <a key={link.href} href={link.href} onClick={() => setMenuOpen(false)}
+                  className="block px-2 py-2 rounded-xl text-center text-cemetery-text bg-cemetery-card hover:bg-cemetery-card/80 transition-colors">
+                  <span className="block text-xs font-medium">{link.label}</span>
+                  <span className="block text-[10px] text-cemetery-ghost/40 mt-0.5">{link.desc}</span>
+                </a>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     )}
