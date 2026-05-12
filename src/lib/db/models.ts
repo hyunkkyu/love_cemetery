@@ -21,6 +21,15 @@ const ManseryeokChatSchema = new Schema({
   expiresAt: { type: Date, index: true }, // 7일 후 만료
 }, { timestamps: true })
 
+// 이메일 인증 코드 (TTL 5분 자동 삭제)
+const EmailVerificationSchema = new Schema({
+  email: { type: String, required: true, unique: true },
+  code: { type: String, required: true },
+  expiresAt: { type: Date, required: true, index: { expires: 0 } }, // TTL 인덱스
+}, { timestamps: true })
+
+export const EmailVerification = mongoose.models.EmailVerification || mongoose.model("EmailVerification", EmailVerificationSchema)
+
 // 코인 내역 로그
 const CoinLogSchema = new Schema({
   userId: { type: String, required: true, index: true },
