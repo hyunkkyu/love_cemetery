@@ -24,8 +24,8 @@ function LoginInner() {
     e.preventDefault()
     setError("")
 
-    if (password.length < 4) {
-      setError("비밀번호는 4자 이상이어야 해요")
+    if (password.length < 8) {
+      setError("입장 암호는 8자 이상이어야 해요")
       return
     }
 
@@ -96,9 +96,9 @@ function LoginInner() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="4자 이상"
+              placeholder="8자 이상"
               required
-              minLength={4}
+              minLength={8}
               className="w-full px-4 py-3 bg-cemetery-surface border border-cemetery-border rounded-lg
                 text-cemetery-text placeholder-cemetery-ghost/40 focus:border-cemetery-accent focus:outline-none"
             />

@@ -20,7 +20,6 @@ function RegisterInner() {
   const [email, setEmail] = useState("")
   const [verifyCode, setVerifyCode] = useState("")
   const [codeSent, setCodeSent] = useState(false)
-  const [codeVerified, setCodeVerified] = useState(false)
   const [sendingCode, setSendingCode] = useState(false)
   const [cooldown, setCooldown] = useState(0)
   const [password, setPassword] = useState("")

@@ -198,7 +198,7 @@ export async function POST(request: NextRequest) {
         if (oldUserId !== newUserId) {
           const mongoose = (await import("mongoose")).default
           const db = mongoose.connection.db!
-          const cols = ["graves", "userdatas", "posts", "comments", "crushes", "analysisrecords", "chathistories", "sajuprofiles", "counsels", "ssumbungs"]
+          const cols = ["graves", "userdatas", "posts", "comments", "crushes", "analysisrecords", "chathistories", "sajuprofiles", "counsels", "ssumbungs", "manseryeokchats", "coinlogs", "ailogs", "gravecomments"]
           for (const col of cols) {
             try { await db.collection(col).updateMany({ userId: oldUserId }, { $set: { userId: newUserId } }) } catch {}
           }

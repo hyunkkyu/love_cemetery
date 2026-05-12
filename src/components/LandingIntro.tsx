@@ -215,7 +215,7 @@ export function LandingIntro() {
           대운, 연애, 결혼, 재물운까지 6가지 학문으로 심층 분석.
         </p>
         <div className="flex gap-3 justify-center flex-wrap px-4">
-          <a href="/login" className="px-6 sm:px-8 py-3 sm:py-4 bg-cemetery-accent hover:bg-cemetery-accent-dim rounded-2xl font-bold text-sm sm:text-base transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-cemetery-accent/30">
+          <a href="/register" className="px-6 sm:px-8 py-3 sm:py-4 bg-cemetery-accent hover:bg-cemetery-accent-dim rounded-2xl font-bold text-sm sm:text-base transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-cemetery-accent/30">
             무료로 시작하기
           </a>
           <a href="#landing-features" className="px-6 sm:px-8 py-3 sm:py-4 bg-transparent border-2 border-cemetery-accent text-cemetery-accent hover:bg-cemetery-accent hover:text-white rounded-2xl font-bold text-sm sm:text-base transition-all">
@@ -330,7 +330,7 @@ export function LandingIntro() {
             가입하면 500코인 + 무료 분석 3회 제공
           </p>
           <div className="flex gap-3 justify-center flex-wrap">
-            <a href="/login" className="px-8 py-4 bg-cemetery-accent hover:bg-cemetery-accent-dim rounded-2xl font-bold transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-cemetery-accent/30">
+            <a href="/register" className="px-8 py-4 bg-cemetery-accent hover:bg-cemetery-accent-dim rounded-2xl font-bold transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-cemetery-accent/30">
               무료 회원가입
             </a>
             <a href="/login" className="px-8 py-4 bg-transparent border-2 border-cemetery-accent text-cemetery-accent hover:bg-cemetery-accent hover:text-white rounded-2xl font-bold transition-all">

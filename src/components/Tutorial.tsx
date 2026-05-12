@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useSession } from "next-auth/react"
 
 const STEPS = [
   {
@@ -31,7 +30,6 @@ const STEPS = [
 ]
 
 export function Tutorial() {
-  const { data: session } = useSession()
   const [show, setShow] = useState(false)
   const [step, setStep] = useState(0)
   const [hideToday, setHideToday] = useState(false)

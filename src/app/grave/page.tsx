@@ -95,9 +95,7 @@ export default function GravePage() {
         <div className="space-y-3">
           <h2 className="font-gothic text-lg text-cemetery-heading">안치된 묘비</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {graves.map((grave) => {
-              const gradeInfo = GRAVE_GRADES[grave.grade || "public"]
-              return (
+            {graves.map((grave) => (
                 <div key={grave.id} className="relative group">
                   <GraveCard grave={grave} />
                   <button
@@ -108,8 +106,7 @@ export default function GravePage() {
                     ✕
                   </button>
                 </div>
-              )
-            })}
+            ))}
           </div>
         </div>
       )}
