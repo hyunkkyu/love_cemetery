@@ -24,7 +24,6 @@ const NAV_GROUPS: NavGroup[] = [
       { href: "/manseryeok", label: "🔮 운명 분석", desc: "6학문 교차검증" },
       { href: "/love", label: "💘 살랑살랑", desc: "현재 썸/연애 분석" },
       { href: "/ssum", label: "💔 썸붕", desc: "썸붕 원인 분석" },
-      { href: "/counsel", label: "🧙 상담", desc: "AI 연애 상담" },
     ],
   },
   {
@@ -49,7 +48,6 @@ const ALL_LINKS = [
   { href: "/love", label: "💘 살랑살랑", sub: "현재 썸 궁합" },
   { href: "/ssum", label: "💔 썸붕 분석", sub: "썸 깨진 이유" },
   { href: "/compare", label: "⚖️ 비교 분석", sub: "묘비 둘 비교" },
-  { href: "/counsel", label: "🧙 AI 상담", sub: "하루 3회 무료" },
   { href: "/partner", label: "💀 동반자", sub: "서로 묘비 열람" },
   { href: "/community", label: "👻 커뮤니티", sub: "연애토크" },
   { href: "/stats", label: "📊 통계", sub: "랭킹/MBTI" },

@@ -8,7 +8,7 @@ interface CoinLogItem { id: string; amount: number; reason: string; balance: num
 interface MyStats {
   coins: number; inviteCount: number
   graveCount: number; postCount: number; commentCount: number
-  counselCount: number; ssumCount: number
+  ssumCount: number
   graveRank: number | string; totalUsers: number
 }
 
@@ -69,10 +69,9 @@ export default function MyPage() {
             <StatCard label="초대한 친구" value={String(stats.inviteCount)} icon="🎁" />
           </div>
 
-          <div className="grid grid-cols-4 gap-2">
+          <div className="grid grid-cols-3 gap-2">
             <MiniStat label="글" value={stats.postCount} />
             <MiniStat label="댓글" value={stats.commentCount} />
-            <MiniStat label="상담" value={stats.counselCount} />
             <MiniStat label="썸붕" value={stats.ssumCount} />
           </div>
         </>

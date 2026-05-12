@@ -263,7 +263,6 @@ export default function NoticePage() {
           <GuideItem href="/community" icon="👻" title="커뮤니티" desc="연애토크/사주해석/고민상담" />
           <GuideItem href="/community/match" icon="💕" title="궁합 매칭" desc="사주 기반 유저 매칭" />
           <GuideItem href="/ssum" icon="💔" title="썸붕 분석" desc="썸이 왜 깨졌는지 객관적 분석" />
-          <GuideItem href="/counsel" icon="🧙" title="연애 상담" desc="AI 전문 상담사에게 맞춤 상담" />
           <GuideItem href="/shop" icon="🛒" title="상점" desc="픽셀아트 아이템 구매" />
           <GuideItem href="/stats" icon="📊" title="통계" desc="랭킹/MBTI/일주 통계" />
         </div>

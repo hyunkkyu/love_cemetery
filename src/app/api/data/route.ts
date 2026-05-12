@@ -256,11 +256,10 @@ export async function POST(request: NextRequest) {
       }
 
       case "mypage.stats": {
-        const [graveCount, postCount, commentCount, counselCount, ssumCount] = await Promise.all([
+        const [graveCount, postCount, commentCount, ssumCount] = await Promise.all([
           Grave.countDocuments({ userId }),
           (await import("@/lib/db/community-models")).Post.countDocuments({ userId }),
           (await import("@/lib/db/community-models")).Comment.countDocuments({ userId }),
-          (await import("mongoose")).default.connection.db!.collection("counsels").countDocuments({ userId }),
           (await import("mongoose")).default.connection.db!.collection("ssumbungs").countDocuments({ userId }),
         ])
         // 내 묘비 랭킹
@@ -275,7 +274,7 @@ export async function POST(request: NextRequest) {
           data: {
             coins: (user as Record<string, unknown>)?.coins || 0,
             inviteCount: (user as Record<string, unknown>)?.inviteCount || 0,
-            graveCount, postCount, commentCount, counselCount, ssumCount,
+            graveCount, postCount, commentCount, ssumCount,
             graveRank: myRank || "순위 없음",
             totalUsers: allUsers.length,
           },

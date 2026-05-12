@@ -191,12 +191,7 @@ export default function HomePage() {
             cost="무료" href="/ssum" color="text-red-400"
           />
           <GuideStep
-            step="5" emoji="🧙" title="AI 연애 상담"
-            desc="내 기록을 바탕으로 AI 상담사가 맞춤 조언해줘요."
-            cost="하루 3회 무료 (이후 20코인)" href="/counsel" color="text-green-400"
-          />
-          <GuideStep
-            step="6" emoji="👻" title="커뮤니티"
+            step="5" emoji="👻" title="커뮤니티"
             desc="다른 유령들과 연애 이야기를 나누고 조언해요."
             cost="글 작성 +10코인" href="/community" color="text-purple-400"
           />
