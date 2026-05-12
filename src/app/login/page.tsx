@@ -63,7 +63,7 @@ export default function LoginPage() {
             묘지 출입증
           </h1>
           <p className="text-cemetery-ghost text-sm">
-            닉네임과 비밀번호로 입장하세요<br />
+            닉네임과 입장 암호로 입장하세요<br />
             계정이 없다면 <a href="/register" className="text-cemetery-accent hover:underline">회원가입</a>해주세요
           </p>
         </div>
@@ -82,7 +82,7 @@ export default function LoginPage() {
             />
           </div>
           <div>
-            <label className="block text-sm text-cemetery-ghost mb-1">비밀번호</label>
+            <label className="block text-sm text-cemetery-ghost mb-1">입장 암호</label>
             <input
               type="password"
               value={password}

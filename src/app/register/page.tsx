@@ -96,9 +96,9 @@ export default function RegisterPage() {
           </div>
 
           <div>
-            <label className="block text-xs text-cemetery-ghost/50 mb-1">🔮 입장 주문 (8자 이상, 영문+숫자)</label>
+            <label className="block text-xs text-cemetery-ghost/50 mb-1">🔒 입장 암호 설정 (8자 이상, 영문+숫자)</label>
             <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
-              placeholder="묘지 입장 주문"
+              placeholder="입장 암호 설정"
               className="w-full px-4 py-3 bg-cemetery-surface border border-cemetery-border rounded-xl text-cemetery-text placeholder-cemetery-ghost/30 focus:border-cemetery-accent focus:outline-none" />
             {password.length > 0 && (
               <div className="flex gap-2 mt-1">
