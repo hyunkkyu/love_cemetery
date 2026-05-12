@@ -409,11 +409,27 @@ export default function ManseryeokPage() {
 
           {/* 분석 결과 */}
           {analysis && !loading && (
-            <AnalysisResult analysis={analysis} onReanalyze={() => { setAnalysis(""); requestAnalysis() }} />
+            <div className="relative">
+              <AnalysisResult analysis={analysis} onReanalyze={() => { setAnalysis(""); requestAnalysis() }} />
+              {/* 비로그인: 반절만 보이고 블러 + 로그인 유도 */}
+              {!userId && (
+                <div className="absolute inset-0 top-[40%] flex flex-col items-center justify-end pb-8 rounded-b-2xl"
+                  style={{ background: "linear-gradient(to bottom, transparent 0%, rgba(10,10,18,0.95) 40%)" }}>
+                  <div className="text-center space-y-3 px-4">
+                    <p className="text-cemetery-heading font-bold text-sm">전체 분석 결과를 보려면 로그인하세요</p>
+                    <p className="text-cemetery-ghost/50 text-xs">가입하면 500코인 + 무제한 분석!</p>
+                    <a href="/login"
+                      className="inline-block px-6 py-2.5 bg-cemetery-accent hover:bg-cemetery-accent-dim rounded-xl text-sm font-semibold transition-colors">
+                      로그인하고 전체 보기
+                    </a>
+                  </div>
+                </div>
+              )}
+            </div>
           )}
 
-          {/* 후속 채팅 */}
-          {analysis && !loading && (
+          {/* 후속 채팅 (로그인 유저만) */}
+          {analysis && !loading && userId && (
             <div className="bg-cemetery-card border border-cemetery-border rounded-2xl overflow-hidden">
               <div className="px-5 py-3 bg-cemetery-surface/50 flex items-center justify-between">
                 <h3 className="text-sm font-semibold text-cemetery-heading">💬 추가 질문</h3>
