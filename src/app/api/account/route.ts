@@ -222,6 +222,46 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ data: { success: true } })
       }
 
+      // 계정 및 모든 데이터 삭제
+      case "deleteAccount": {
+        const session = await (await import("@/lib/auth")).auth()
+        const sessionUserId = (session?.user as { id?: string })?.id
+        if (!sessionUserId) return NextResponse.json({ error: "로그인이 필요합니다" }, { status: 401 })
+
+        const confirmText = String(body.confirmText || "")
+        if (confirmText !== "계정삭제") {
+          return NextResponse.json({ error: "'계정삭제'를 정확히 입력해주세요" }, { status: 400 })
+        }
+
+        const mongoose = (await import("mongoose")).default
+        const db = mongoose.connection.db!
+
+        // 모든 컬렉션에서 해당 유저 데이터 삭제
+        const collections = [
+          "graves", "userdatas", "posts", "comments", "crushes",
+          "analysisrecords", "chathistories", "sajuprofiles",
+          "counsels", "ssumbungs", "manseryeokchats", "coinlogs", "ailogs",
+        ]
+        for (const col of collections) {
+          try { await db.collection(col).deleteMany({ userId: sessionUserId }) } catch { /* ignore */ }
+        }
+        // 동반자 관계 삭제
+        try {
+          await db.collection("soulpartners").deleteMany({
+            $or: [{ fromUserId: sessionUserId }, { toUserId: sessionUserId }],
+          })
+        } catch { /* ignore */ }
+        // 묘비 코멘트 삭제
+        try {
+          await db.collection("gravecomments").deleteMany({ userId: sessionUserId })
+        } catch { /* ignore */ }
+
+        // 유저 계정 삭제
+        await User.deleteOne({ userId: sessionUserId })
+
+        return NextResponse.json({ data: { deleted: true } })
+      }
+
       default:
         return NextResponse.json({ error: "Unknown action" }, { status: 400 })
     }

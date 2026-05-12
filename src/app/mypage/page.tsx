@@ -124,6 +124,9 @@ export default function MyPage() {
           🚪 로그아웃
         </button>
       </div>
+
+      {/* 계정 삭제 */}
+      <DeleteAccountSection />
     </div>
   )
 }
@@ -134,6 +137,72 @@ function StatCard({ label, value, icon }: { label: string; value: string; icon: 
       <span className="text-lg">{icon}</span>
       <p className="text-lg font-bold text-cemetery-heading mt-1">{value}</p>
       <p className="text-[10px] text-cemetery-ghost/40">{label}</p>
+    </div>
+  )
+}
+
+function DeleteAccountSection() {
+  const [open, setOpen] = useState(false)
+  const [confirmText, setConfirmText] = useState("")
+  const [deleting, setDeleting] = useState(false)
+  const [error, setError] = useState("")
+
+  const handleDelete = async () => {
+    if (confirmText !== "계정삭제") { setError("'계정삭제'를 정확히 입력해주세요"); return }
+    setDeleting(true)
+    setError("")
+    try {
+      const res = await fetch("/api/account", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "deleteAccount", confirmText }),
+      })
+      const data = await res.json()
+      if (data.error) { setError(data.error); setDeleting(false); return }
+      // 삭제 성공 → 로그아웃
+      const { signOut } = await import("next-auth/react")
+      signOut({ callbackUrl: "/" })
+    } catch {
+      setError("삭제 중 오류가 발생했습니다")
+      setDeleting(false)
+    }
+  }
+
+  return (
+    <div className="pt-4 border-t border-cemetery-border/30">
+      {!open ? (
+        <button onClick={() => setOpen(true)}
+          className="w-full py-2 text-xs text-cemetery-ghost/30 hover:text-red-400/60 transition-colors">
+          계정 삭제
+        </button>
+      ) : (
+        <div className="bg-red-900/10 border border-red-500/20 rounded-2xl p-5 space-y-3 animate-fade-in">
+          <h3 className="text-sm font-bold text-red-400">계정 삭제</h3>
+          <p className="text-xs text-cemetery-ghost/60 leading-relaxed">
+            계정을 삭제하면 <strong className="text-red-400">모든 묘비, 분석 기록, 코인, 커뮤니티 활동</strong>이
+            영구적으로 삭제되며 복구할 수 없습니다.
+          </p>
+          <div>
+            <label className="block text-xs text-cemetery-ghost/40 mb-1">
+              확인을 위해 <strong className="text-red-400">계정삭제</strong>를 입력하세요
+            </label>
+            <input type="text" value={confirmText} onChange={(e) => setConfirmText(e.target.value)}
+              placeholder="계정삭제"
+              className="w-full px-3 py-2 bg-cemetery-surface border border-red-500/20 rounded-lg text-cemetery-text text-sm focus:border-red-500 focus:outline-none" />
+          </div>
+          {error && <p className="text-xs text-red-400">{error}</p>}
+          <div className="flex gap-3">
+            <button onClick={() => { setOpen(false); setConfirmText(""); setError("") }}
+              className="flex-1 py-2 bg-cemetery-surface border border-cemetery-border rounded-xl text-xs text-cemetery-ghost transition-colors">
+              취소
+            </button>
+            <button onClick={handleDelete} disabled={deleting || confirmText !== "계정삭제"}
+              className="flex-1 py-2 bg-red-600 hover:bg-red-700 disabled:opacity-40 rounded-xl text-xs font-semibold text-white transition-colors">
+              {deleting ? "삭제 중..." : "영구 삭제"}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
