@@ -243,7 +243,7 @@ export function GraveForm({ onSave, initial, initialGrade }: GraveFormProps) {
       }
 
       const grave: Grave = {
-        id: initial?.id || Math.random().toString(36).slice(2) + Date.now().toString(36),
+        id: initial?.id || "", // 새 묘비는 서버에서 ID 생성
         ...form,
         photo,
         chatAnalysis,

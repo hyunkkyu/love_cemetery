@@ -9,7 +9,7 @@ interface DateInputProps {
   className?: string
 }
 
-export function DateInput({ value, onChange, placeholder = "예: 19950315", className = "" }: DateInputProps) {
+export function DateInput({ value, onChange, placeholder = "YYYYMMDD (예: 19950315)", className = "" }: DateInputProps) {
   const [text, setText] = useState("")
   const dateRef = useRef<HTMLInputElement>(null)
 
