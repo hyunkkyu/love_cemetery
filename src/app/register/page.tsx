@@ -18,6 +18,11 @@ function RegisterInner() {
   const [nickname, setNickname] = useState("")
   const [nicknameOk, setNicknameOk] = useState<boolean | null>(null)
   const [email, setEmail] = useState("")
+  const [verifyCode, setVerifyCode] = useState("")
+  const [codeSent, setCodeSent] = useState(false)
+  const [codeVerified, setCodeVerified] = useState(false)
+  const [sendingCode, setSendingCode] = useState(false)
+  const [cooldown, setCooldown] = useState(0)
   const [password, setPassword] = useState("")
   const [passwordConfirm, setPasswordConfirm] = useState("")
   const [error, setError] = useState("")
@@ -39,6 +44,35 @@ function RegisterInner() {
     return () => clearTimeout(timer)
   }, [nickname])
 
+  // 쿨다운 타이머
+  useEffect(() => {
+    if (cooldown <= 0) return
+    const t = setTimeout(() => setCooldown(cooldown - 1), 1000)
+    return () => clearTimeout(t)
+  }, [cooldown])
+
+  const handleSendCode = async () => {
+    if (sendingCode || cooldown > 0) return
+    if (!emailValid) { setError("올바른 이메일을 입력해주세요"); return }
+    setSendingCode(true)
+    setError("")
+    try {
+      const res = await fetch("/api/account", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "sendVerifyCode", email }),
+      })
+      const data = await res.json()
+      if (data.error) { setError(data.error); return }
+      setCodeSent(true)
+      setCooldown(60)
+    } catch {
+      setError("코드 발송에 실패했습니다")
+    } finally {
+      setSendingCode(false)
+    }
+  }
+
   const passwordValid = password.length >= 8 && /[a-zA-Z]/.test(password) && /[0-9]/.test(password)
   const passwordMatch = password === passwordConfirm && passwordConfirm.length > 0
   const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
@@ -48,6 +82,7 @@ function RegisterInner() {
     if (!nickname || !email || !password) { setError("모든 항목을 입력해주세요"); return }
     if (!nicknameOk) { setError("사용할 수 없는 닉네임입니다"); return }
     if (!emailValid) { setError("올바른 이메일을 입력해주세요"); return }
+    if (!codeSent || !verifyCode) { setError("이메일 인증 코드를 입력해주세요"); return }
     if (!passwordValid) { setError("비밀번호: 8자 이상, 영문+숫자 포함"); return }
     if (!passwordMatch) { setError("비밀번호가 일치하지 않습니다"); return }
 
@@ -56,7 +91,7 @@ function RegisterInner() {
       const res = await fetch("/api/account", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "register", nickname, email, password }),
+        body: JSON.stringify({ action: "register", nickname, email, password, verifyCode }),
       })
       const data = await res.json()
       if (data.error) { setError(data.error); setLoading(false); return }
@@ -93,16 +128,33 @@ function RegisterInner() {
           </div>
 
           <div>
-            <label className="block text-xs text-cemetery-ghost/50 mb-1">📧 이메일 (비밀번호 찾기에 사용)</label>
-            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
-              placeholder="your@email.com" inputMode="email"
-              className="w-full px-4 py-3 bg-cemetery-surface border border-cemetery-border rounded-xl text-cemetery-text placeholder-cemetery-ghost/30 focus:border-cemetery-accent focus:outline-none" />
-            {email.length > 0 && (
-              <p className={"text-[10px] mt-1 " + (emailValid ? "text-green-400" : "text-red-400")}>
-                {emailValid ? "✓ 유효한 이메일" : "✕ 이메일 형식이 아닙니다"}
-              </p>
+            <label className="block text-xs text-cemetery-ghost/50 mb-1">📧 이메일</label>
+            <div className="flex gap-2">
+              <input type="email" value={email} onChange={(e) => { setEmail(e.target.value); setCodeSent(false); setVerifyCode("") }}
+                placeholder="your@email.com" inputMode="email"
+                className="flex-1 px-4 py-3 bg-cemetery-surface border border-cemetery-border rounded-xl text-cemetery-text placeholder-cemetery-ghost/30 focus:border-cemetery-accent focus:outline-none" />
+              <button type="button" onClick={handleSendCode}
+                disabled={sendingCode || !emailValid || cooldown > 0}
+                className="px-4 py-3 bg-cemetery-accent hover:bg-cemetery-accent-dim disabled:opacity-40
+                  rounded-xl text-xs font-semibold whitespace-nowrap transition-colors">
+                {sendingCode ? "발송중..." : cooldown > 0 ? `${cooldown}초` : codeSent ? "재발송" : "인증코드"}
+              </button>
+            </div>
+            {email.length > 0 && !emailValid && (
+              <p className="text-[10px] mt-1 text-red-400">✕ 이메일 형식이 아닙니다</p>
             )}
           </div>
+
+          {/* 인증 코드 입력 */}
+          {codeSent && (
+            <div className="animate-fade-in">
+              <label className="block text-xs text-cemetery-ghost/50 mb-1">🔢 인증 코드 (이메일 확인)</label>
+              <input type="text" value={verifyCode} onChange={(e) => setVerifyCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                placeholder="6자리 숫자" inputMode="numeric" maxLength={6}
+                className="w-full px-4 py-3 bg-cemetery-surface border border-cemetery-border rounded-xl text-cemetery-text placeholder-cemetery-ghost/30 focus:border-cemetery-accent focus:outline-none text-center text-lg tracking-[8px]" />
+              <p className="text-[10px] mt-1 text-cemetery-ghost/40">이메일로 발송된 6자리 코드를 입력하세요 (5분 유효)</p>
+            </div>
+          )}
 
           <div>
             <label className="block text-xs text-cemetery-ghost/50 mb-1">🔒 입장 암호 설정 (8자 이상, 영문+숫자)</label>

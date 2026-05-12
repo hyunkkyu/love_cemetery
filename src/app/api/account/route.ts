@@ -6,6 +6,16 @@ import crypto from "crypto"
 
 export const maxDuration = 30
 
+// 이메일 인증 코드 저장 (인메모리, 5분 TTL)
+const verifyStore = new Map<string, { code: string; expires: number }>()
+
+function cleanExpired() {
+  const now = Date.now()
+  for (const [k, v] of verifyStore) {
+    if (v.expires < now) verifyStore.delete(k)
+  }
+}
+
 export async function POST(request: NextRequest) {
   let body: Record<string, unknown>
   try { body = await request.json() } catch { return NextResponse.json({ error: "Invalid JSON" }, { status: 400 }) }
@@ -15,10 +25,47 @@ export async function POST(request: NextRequest) {
 
   try {
     switch (action) {
+      // 이메일 인증 코드 발송
+      case "sendVerifyCode": {
+        cleanExpired()
+        const email = String(body.email || "").trim().toLowerCase()
+        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          return NextResponse.json({ error: "올바른 이메일을 입력해주세요" }, { status: 400 })
+        }
+
+        // 이미 등록된 이메일 체크
+        const exists = await User.findOne({ email })
+        if (exists) {
+          return NextResponse.json({ error: "이미 등록된 이메일입니다" }, { status: 400 })
+        }
+
+        // 60초 내 재발송 방지
+        const prev = verifyStore.get(email)
+        if (prev && prev.expires - 4 * 60 * 1000 > Date.now()) {
+          return NextResponse.json({ error: "잠시 후 다시 시도해주세요 (60초 제한)" }, { status: 429 })
+        }
+
+        // 6자리 코드 생성
+        const code = String(Math.floor(100000 + Math.random() * 900000))
+        verifyStore.set(email, { code, expires: Date.now() + 5 * 60 * 1000 })
+
+        try {
+          const { sendVerifyCode } = await import("@/lib/mailer")
+          await sendVerifyCode(email, code)
+        } catch {
+          verifyStore.delete(email)
+          return NextResponse.json({ error: "이메일 발송에 실패했습니다" }, { status: 500 })
+        }
+
+        return NextResponse.json({ data: { sent: true } })
+      }
+
       case "register": {
+        cleanExpired()
         const nickname = String(body.nickname || "").trim()
         const email = String(body.email || "").trim().toLowerCase()
         const password = String(body.password || "")
+        const verifyCode = String(body.verifyCode || "").trim()
 
         // 닉네임 검증
         if (nickname.length < 2 || nickname.length > 12) {
@@ -31,6 +78,16 @@ export async function POST(request: NextRequest) {
         // 이메일 검증
         if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
           return NextResponse.json({ error: "올바른 이메일을 입력해주세요" }, { status: 400 })
+        }
+
+        // 이메일 인증 코드 검증
+        const stored = verifyStore.get(email)
+        if (!stored || stored.code !== verifyCode) {
+          return NextResponse.json({ error: "인증 코드가 올바르지 않습니다" }, { status: 400 })
+        }
+        if (stored.expires < Date.now()) {
+          verifyStore.delete(email)
+          return NextResponse.json({ error: "인증 코드가 만료되었습니다. 다시 발송해주세요" }, { status: 400 })
         }
 
         // 비밀번호 검증
@@ -58,6 +115,7 @@ export async function POST(request: NextRequest) {
         const hashedPassword = await bcrypt.hash(password, 10)
 
         await User.create({ nickname, email, hashedPassword, userId })
+        verifyStore.delete(email) // 사용된 코드 제거
 
         return NextResponse.json({ data: { userId, nickname } })
       }

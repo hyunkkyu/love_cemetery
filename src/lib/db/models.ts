@@ -3,7 +3,7 @@ import mongoose, { Schema, type Document } from "mongoose"
 // 유저 계정
 const UserSchema = new Schema({
   nickname: { type: String, required: true, unique: true, minlength: 2, maxlength: 12 },
-  email: { type: String, required: true, index: true },
+  email: { type: String, required: true, unique: true },
   hashedPassword: { type: String, required: true },
   userId: { type: String, required: true, unique: true },
   resetToken: String,
