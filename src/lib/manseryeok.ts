@@ -75,20 +75,23 @@ function getYearPillar(year: number, month: number, day: number): Pillar {
 
 /** 월주 계산 */
 function getMonthPillar(year: number, month: number, day: number): Pillar {
-  // 절기 기반 월 보정
+  // 절기 기반 월 보정 (양력 month → 해당 절기 구간의 양력 월)
   let lunarMonth = month
   const term = SOLAR_TERMS_MONTH.find((t) => t.month === month)
   if (term && day < term.startDay) {
     lunarMonth = month === 1 ? 12 : month - 1
   }
 
-  // 월주 천간은 연간에 의해 결정
-  const yearStemIdx = (year - 4) % 10
-  const monthStemBase = (yearStemIdx % 5) * 2
-  const monthStemIdx = (monthStemBase + (lunarMonth - 1)) % 10
+  // 입춘 기준 연도 보정 (월주 천간은 연간에 의해 결정)
+  const adjustedYear = (month < 2 || (month === 2 && day < 4)) ? year - 1 : year
+  const yearStemIdx = (adjustedYear - 4) % 10
+  // 갑/기→병(2), 을/경→무(4), 병/신→경(6), 정/임→임(8), 무/계→갑(0)
+  const monthStemBase = ((yearStemIdx % 5) * 2 + 2) % 10
+  // 양력 2월=인월(offset 0), 3월=묘월(offset 1), ..., 1월=축월(offset 11)
+  const monthStemIdx = (monthStemBase + ((lunarMonth + 10) % 12)) % 10
 
-  // 월주 지지: 인월(1월=寅)부터
-  const monthBranchIdx = (lunarMonth + 1) % 12
+  // 월주 지지: 양력 2월=인(idx 2), 3월=묘(idx 3), ..., 1월=축(idx 1)
+  const monthBranchIdx = lunarMonth % 12
   return makePillar(monthStemIdx, monthBranchIdx)
 }
 
