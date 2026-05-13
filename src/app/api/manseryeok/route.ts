@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { callLLM } from "@/lib/llm"
 import { connectDB } from "@/lib/db/mongoose"
-import { AiLog } from "@/lib/db/models"
+import { AiLog, Grave } from "@/lib/db/models"
 import { auth } from "@/lib/auth"
 
 export const maxDuration = 60
@@ -46,6 +46,23 @@ export async function POST(request: NextRequest) {
       focusArea = categories[category] || ""
     }
 
+    // 로그인 유저: 과거 연애(묘비) 기록 가져오기
+    let graveContext = ""
+    if (uid) {
+      try {
+        await connectDB()
+        const graves = await Grave.find({ userId: uid }).lean()
+        if (graves.length > 0) {
+          const summaries = graves.map((g) => {
+            const doc = g as Record<string, unknown>
+            const compat = doc.compatibility as Record<string, unknown> | undefined
+            return `- ${doc.nickname}: 사인=${doc.causeOfDeath || "미상"}, 궁합=${compat?.score || "?"}점, 사연=${(doc.graveReason as string || "").slice(0, 80)}`
+          }).join("\n")
+          graveContext = `\n[과거 연애 기록 (${graves.length}건)]\n${summaries}\n→ 이 패턴을 참고하여 연애운/대인관계 분석 시 반복되는 문제점이나 성장 포인트를 짚어주세요.\n`
+        }
+      } catch { /* ignore */ }
+    }
+
     const prompt = `아래 사주/운명학 데이터를 바탕으로, 일상 언어로 쉽게 분석해주세요.
 전문 용어는 괄호 안에만 짧게, 본문은 누구나 알아들을 수 있게.
 
@@ -68,7 +85,7 @@ ${manseryeok?.summary || "데이터 없음"}
 - 본명성(구궁수): ${kuaNumber || "계산 불가"}
 ${name ? `- 이름 "${name}"의 수리성명학적 의미도 참고` : ""}
 
-${focusArea ? `[집중 분석 주제]: ${focusArea}` : ""}
+${graveContext}${focusArea ? `[집중 분석 주제]: ${focusArea}` : ""}
 ${question ? `[사용자 질문]: ${question}` : ""}
 
 ## 답변 규칙

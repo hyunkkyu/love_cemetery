@@ -165,7 +165,7 @@ export default function ManseryeokPage() {
           action: "msChat.save",
           chatId: chatId || undefined,
           birthDate, name,
-          analysis: analysis.slice(0, 500),
+          analysis: analysis,
           messages: msgs,
         }),
       })
@@ -549,7 +549,12 @@ export default function ManseryeokPage() {
                         <p className="text-sm text-cemetery-heading">
                           {(chat.name as string) || "이름 미입력"} · {chat.birthDate as string}
                         </p>
-                        <p className="text-[10px] text-cemetery-ghost/40">
+                        {typeof chat.analysis === "string" && chat.analysis && (
+                          <p className="text-xs text-cemetery-ghost/50 mt-0.5 line-clamp-2">
+                            {chat.analysis.replace(/\*\*/g, "").slice(0, 100)}...
+                          </p>
+                        )}
+                        <p className="text-[10px] text-cemetery-ghost/30 mt-0.5">
                           {((chat.messages as unknown[]) || []).length}개 대화 · {new Date(chat.createdAt as string).toLocaleDateString("ko-KR")}
                         </p>
                       </button>
