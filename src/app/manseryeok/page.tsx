@@ -692,21 +692,20 @@ function AnalysisResult({ analysis, onReanalyze }: { analysis: string; onReanaly
 
 /** **소제목** 패턴으로 텍스트를 섹션으로 분리 */
 function parseSections(text: string): Array<{ title: string; content: string }> {
-  // **제목** 또는 ## 제목 또는 이모지+제목 패턴
   const lines = text.split("\n")
   const sections: Array<{ title: string; content: string }> = []
   let currentTitle = ""
   let currentContent: string[] = []
 
   for (const line of lines) {
-    // 소제목 감지: **텍스트**, ## 텍스트, 이모지 + 텍스트 (줄 전체가 짧고 볼드)
-    const boldMatch = line.match(/^\*\*(.+?)\*\*\s*$/)
-    const hashMatch = line.match(/^#{1,3}\s+(.+)$/)
-    const emojiTitleMatch = line.match(/^[🔮💫🪔🕯️✨💘🔥⚡🌳💧⛰️⚔️🧠💼🏥📅👨‍👩‍👧🐾🎨💪🔍💡🪞✝️☯️⭐🌙]\s*.{3,30}$/)
+    const trimmed = line.trim()
+    // 소제목 감지: **텍스트** 또는 ## 텍스트 (이모지+텍스트는 볼드/해시 안에 있을 때만)
+    const boldMatch = trimmed.match(/^\*\*(.+?)\*\*\s*$/)
+    const hashMatch = trimmed.match(/^#{1,3}\s+(.+)$/)
 
-    const isTitle = boldMatch || hashMatch || emojiTitleMatch
+    const isTitle = (boldMatch || hashMatch) && trimmed.length < 50
 
-    if (isTitle && line.trim().length < 50) {
+    if (isTitle) {
       // 이전 섹션 저장
       if (currentTitle || currentContent.length > 0) {
         sections.push({
@@ -714,7 +713,7 @@ function parseSections(text: string): Array<{ title: string; content: string }> 
           content: currentContent.join("\n").trim(),
         })
       }
-      currentTitle = (boldMatch?.[1] || hashMatch?.[1] || line).trim()
+      currentTitle = (boldMatch?.[1] || hashMatch?.[1] || trimmed).trim()
       currentContent = []
     } else {
       currentContent.push(line)
@@ -729,5 +728,15 @@ function parseSections(text: string): Array<{ title: string; content: string }> 
     })
   }
 
-  return sections.filter((s) => s.content.trim().length > 0)
+  // 빈 섹션 제거 + 빈 섹션의 제목을 다음 섹션에 병합
+  const filtered: Array<{ title: string; content: string }> = []
+  for (const s of sections) {
+    if (s.content.trim().length > 0) {
+      filtered.push(s)
+    } else if (filtered.length > 0) {
+      // 빈 섹션의 제목을 이전 섹션 내용 끝에 추가
+      filtered[filtered.length - 1].content += "\n\n" + s.title
+    }
+  }
+  return filtered
 }
