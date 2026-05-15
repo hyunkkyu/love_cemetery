@@ -350,6 +350,9 @@ export default function SsumPage() {
                     </div>
                   )}
 
+                  {/* 수사학 분석 */}
+                  <SsumRhetoricAnalysis record={s} />
+
                   {/* 편집 버튼 */}
                   <button onClick={() => handleEdit(s)}
                     className="w-full py-2 bg-cemetery-surface border border-cemetery-border hover:border-cemetery-accent rounded-xl text-xs text-cemetery-ghost transition-colors cute-press">
@@ -458,6 +461,150 @@ export default function SsumPage() {
         <div className="text-center py-12 text-cemetery-ghost/30">
           <span className="text-4xl">💔</span>
           <p className="text-sm mt-2">아직 썸붕 기록이 없어요</p>
+        </div>
+      )}
+    </div>
+  )
+}
+
+/** 썸붕 수사학 분석: 등록 데이터 기반으로 소통 패턴 분석 */
+function SsumRhetoricAnalysis({ record }: { record: SsumRecord }) {
+  const signals = record.signals || []
+  const hasOpinion = !!record.myOpinion
+  const hasLastMsg = !!record.lastMessage
+  const hasPersona = !!record.persona
+  const compatScore = record.compatibility?.score || 0
+
+  // 데이터 충분성 체크
+  if (signals.length === 0 && !hasOpinion && !hasLastMsg) return null
+
+  // --- 에토스 (신뢰 기반) ---
+  let ethosScore = 50
+  const trustSignals = signals.filter((s) =>
+    ["답장 느림", "연락 줄어듬", "약속 취소", "읽씹", "잠수"].some((k) => s.includes(k))
+  )
+  const effortSignals = signals.filter((s) =>
+    ["먼저 연락", "자주 만남", "선물", "기념일", "관심"].some((k) => s.includes(k))
+  )
+  ethosScore -= trustSignals.length * 12
+  ethosScore += effortSignals.length * 10
+  if (compatScore > 70) ethosScore += 10
+  else if (compatScore < 40 && compatScore > 0) ethosScore -= 10
+  ethosScore = Math.max(0, Math.min(100, ethosScore))
+
+  // --- 파토스 (감정 기반) ---
+  let pathosScore = 50
+  const emotionSignals = signals.filter((s) =>
+    ["감정", "싸움", "질투", "불안", "눈물", "화남", "서운", "무관심"].some((k) => s.includes(k))
+  )
+  pathosScore += emotionSignals.length * 8 // 감정 징후 많으면 감정 소통은 활발
+  if (hasOpinion && record.myOpinion.length > 50) pathosScore += 15 // 본인 성찰 깊음
+  if (hasLastMsg) pathosScore += 10
+  pathosScore = Math.max(0, Math.min(100, pathosScore))
+
+  // --- 로고스 (논리 기반) ---
+  let logosScore = 50
+  logosScore += signals.length * 5 // 징후를 많이 파악할수록 분석력 높음
+  if (hasOpinion) logosScore += 10
+  if (hasPersona) logosScore += 10
+  const logicSignals = signals.filter((s) =>
+    ["가치관", "목표", "미래", "방향", "대화 부족", "소통"].some((k) => s.includes(k))
+  )
+  logosScore += logicSignals.length * 8
+  logosScore = Math.max(0, Math.min(100, logosScore))
+
+  // 소통 실패 유형 판정
+  const maxScore = Math.max(ethosScore, pathosScore, logosScore)
+  const minScore = Math.min(ethosScore, pathosScore, logosScore)
+  const failType = minScore === ethosScore ? "신뢰 부족형"
+    : minScore === pathosScore ? "감정 교류 부족형"
+    : "논리/소통 부족형"
+
+  // 인사이트 도출
+  const insights: string[] = []
+
+  if (trustSignals.length >= 2) {
+    insights.push(`신뢰 훼손 징후가 ${trustSignals.length}개 감지됩니다 (${trustSignals.join(", ")}). 에토스(신뢰)가 무너지면 어떤 말도 설득력을 잃게 됩니다. 이 관계에서 신뢰 회복의 기회가 있었는지 돌아보세요.`)
+  }
+
+  if (emotionSignals.length >= 2) {
+    insights.push(`감정 관련 징후가 ${emotionSignals.length}개입니다. 감정 소통(파토스)은 활발했지만, 감정의 방향이 부정적이었을 가능성이 높아요. 좋은 감정 교류 없이 갈등만 반복되면 관계는 소모됩니다.`)
+  } else if (emotionSignals.length === 0 && signals.length > 0) {
+    insights.push(`감정 관련 징후가 없습니다. 감정을 표현하지 못했거나, 상대가 감정을 드러내지 않은 관계였을 수 있어요. 파토스(감정 교류)가 부족하면 관계가 사무적으로 느껴집니다.`)
+  }
+
+  if (logicSignals.length >= 1) {
+    insights.push(`"${logicSignals[0]}" 같은 근본적인 소통 문제가 있었습니다. 로고스(논리적 소통)의 부재는 서로의 생각과 기대를 공유하지 못하게 만들어요.`)
+  }
+
+  if (hasLastMsg && record.lastMessage.length > 10) {
+    insights.push(`마지막 메시지가 기록되어 있습니다. 수사학적으로 '마지막 말'은 관계에 대한 최종 태도를 반영합니다. 그 메시지가 설명(로고스)이었는지, 감정 호소(파토스)였는지, 단절(에토스 포기)이었는지 되돌아보세요.`)
+  }
+
+  if (compatScore > 0 && compatScore < 40) {
+    insights.push(`사주 궁합이 ${compatScore}%로 낮은 편입니다. 기본적인 기질 차이가 소통 방식에도 영향을 미쳤을 수 있어요. 다음 관계에서는 소통 스타일이 맞는 사람을 찾아보세요.`)
+  }
+
+  const SCORES = [
+    { label: "에토스 (신뢰)", score: ethosScore, color: "bg-blue-400",
+      detail: ethosScore > 60 ? "기본적인 신뢰 관계는 유지되었으나, 썸 단계의 불확실성이 영향을 미쳤을 수 있어요."
+        : ethosScore > 30 ? "신뢰 관련 징후가 감지됩니다. 상대의 일관성 부족이 관계 불안을 키웠을 가능성이 있어요."
+        : "신뢰 기반이 크게 흔들린 관계입니다. 상대의 행동에서 일관성을 찾기 어려웠을 거예요." },
+    { label: "파토스 (감정)", score: pathosScore, color: "bg-red-400",
+      detail: pathosScore > 60 ? "감정 교류가 활발한 관계였습니다. 감정이 오갔다는 건 서로에게 의미가 있었다는 뜻이에요."
+        : pathosScore > 30 ? "감정 표현이 제한적이었을 수 있어요. 속마음을 더 나눴다면 결과가 달랐을 수도 있습니다."
+        : "감정 교류가 부족한 관계였습니다. 서로의 감정을 확인하지 못한 채 끝났을 가능성이 높아요." },
+    { label: "로고스 (논리)", score: logosScore, color: "bg-green-400",
+      detail: logosScore > 60 ? "상황을 객관적으로 파악하고 있어요. 이 경험에서 배운 점을 다음 관계에 적용할 수 있을 거예요."
+        : logosScore > 30 ? "원인 분석이 어느 정도 되어 있지만, 더 구체적인 징후나 맥락을 돌아보면 성장에 도움이 됩니다."
+        : "아직 상황 파악이 충분하지 않아요. 징후와 본인의 생각을 더 기록해보면 패턴이 보일 거예요." },
+  ]
+
+  return (
+    <div className="space-y-4 bg-cemetery-surface/30 border border-cemetery-border/30 rounded-xl p-4">
+      <div>
+        <h4 className="text-sm text-cemetery-heading font-semibold">📜 수사학 분석</h4>
+        <p className="text-xs text-cemetery-ghost/40 mt-0.5">등록된 징후와 정보 기반 소통 패턴 분석</p>
+      </div>
+
+      {/* 실패 유형 */}
+      <div className="bg-cemetery-surface rounded-xl p-3 text-center">
+        <p className="text-xs text-cemetery-ghost/50 mb-1">썸붕 소통 유형</p>
+        <p className="text-lg font-bold text-red-400">{failType}</p>
+        <p className="text-xs text-cemetery-ghost/50 mt-1">
+          {failType === "신뢰 부족형" ? "상대의 일관성 없는 행동이 관계의 기반을 흔들었어요" :
+           failType === "감정 교류 부족형" ? "서로의 마음을 충분히 확인하지 못한 채 끝났어요" :
+           "대화와 소통의 부재가 관계를 멀어지게 했어요"}
+        </p>
+      </div>
+
+      {/* 3요소 점수 */}
+      <div className="space-y-2.5">
+        {SCORES.map((s) => (
+          <div key={s.label}>
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-xs text-cemetery-text">{s.label}</span>
+              <span className={`text-xs font-bold ${s.score > 60 ? "text-green-400" : s.score > 30 ? "text-yellow-400" : "text-red-400"}`}>
+                {s.score}점
+              </span>
+            </div>
+            <div className="h-2 bg-cemetery-surface rounded-full overflow-hidden">
+              <div className={`h-full rounded-full ${s.color} transition-all`} style={{ width: `${s.score}%` }} />
+            </div>
+            <p className="text-[10px] text-cemetery-ghost/50 mt-0.5 leading-relaxed">{s.detail}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* 인사이트 */}
+      {insights.length > 0 && (
+        <div className="space-y-2">
+          <h4 className="text-xs font-semibold text-cemetery-heading">💡 인사이트</h4>
+          {insights.map((insight, i) => (
+            <div key={i} className="bg-cemetery-surface/50 rounded-lg px-3 py-2.5">
+              <p className="text-xs text-cemetery-text leading-relaxed">{insight}</p>
+            </div>
+          ))}
         </div>
       )}
     </div>
