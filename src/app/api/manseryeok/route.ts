@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
       if (!checkRateLimit(uid, 5, 60000)) return NextResponse.json({ interpretation: "⚠️ 너무 많은 요청입니다. 1분 후 다시 시도해주세요." }, { status: 429 })
     }
     const body = await request.json()
-    const { manseryeok, birthDate, gender, name, category, question } = body
+    const { manseryeok, birthDate, gender, name, mbti, category, question } = body
     const genderLabel = gender === "M" ? "남성" : gender === "F" ? "여성" : "미입력"
 
     // 생년월일에서 수비학/점성학 정보 추출
@@ -84,6 +84,7 @@ ${manseryeok?.summary || "데이터 없음"}
 - 태양 별자리: ${zodiacSign || "계산 불가"}
 - 본명성(구궁수): ${kuaNumber || "계산 불가"}
 ${name ? `- 이름 "${name}"의 수리성명학적 의미도 참고` : ""}
+${mbti ? `- MBTI: ${mbti} → 사주로 본 성격과 MBTI 자기 인식을 비교하여, 일치하는 점과 갭(괴리)을 짚어주세요` : ""}
 
 ${graveContext}${focusArea ? `[집중 분석 주제]: ${focusArea}` : ""}
 ${question ? `[사용자 질문]: ${question}` : ""}

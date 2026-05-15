@@ -56,6 +56,7 @@ export default function ManseryeokPage() {
   const [birthTime, setBirthTime] = useState("")
   const [gender, setGender] = useState("")
   const [name, setName] = useState("")
+  const [mbti, setMbti] = useState("")
   const [result, setResult] = useState<ManseryeokResult | null>(null)
   const [selectedCategory, setSelectedCategory] = useState("")
   const [customQuestion, setCustomQuestion] = useState("")
@@ -144,6 +145,7 @@ export default function ManseryeokPage() {
         setBirthDate(p.birthDate)
         if (p.birthTime) setBirthTime(p.birthTime)
         if (p.gender) setGender(p.gender)
+        if (p.mbti) setMbti(p.mbti)
         setName(res?.data?.nickname || "")
         setSaveAsMyProfile(true)
         setMyProfileLoaded(true)
@@ -259,7 +261,7 @@ export default function ManseryeokPage() {
       const ilju = `${calcResult.fourPillars.day.stem}${calcResult.fourPillars.day.branch}`
       try {
         await dbSajuProfile.register(userId, session?.user?.name || name || "익명", {
-          birthDate, birthTime, gender, ilju, yearBranch,
+          birthDate, birthTime, gender, mbti: mbti || undefined, ilju, yearBranch,
           dominantElement: calcResult.dominantElement,
           elementBalance: calcResult.elementBalance,
           isPublic: true,
@@ -279,6 +281,7 @@ export default function ManseryeokPage() {
         body: JSON.stringify({
           manseryeok: result, birthDate, gender,
           name: name || undefined,
+          mbti: mbti || undefined,
           category: selectedCategory || undefined,
           question: customQuestion || undefined,
         }),
@@ -380,6 +383,20 @@ export default function ManseryeokPage() {
               className="w-full px-3 py-2.5 bg-cemetery-surface border border-cemetery-border rounded-lg text-cemetery-text text-sm focus:border-cemetery-accent focus:outline-none">
               {hourOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
             </select>
+          </div>
+        </div>
+        {/* MBTI (선택) */}
+        <div>
+          <label className="block text-xs text-cemetery-ghost/50 mb-1">MBTI (선택 — 사주와 교차 비교)</label>
+          <div className="grid grid-cols-4 sm:grid-cols-8 gap-1.5">
+            {["ISTJ","ISFJ","INFJ","INTJ","ISTP","ISFP","INFP","INTP","ESTP","ESFP","ENFP","ENTP","ESTJ","ESFJ","ENFJ","ENTJ"].map((m) => (
+              <button key={m} type="button" onClick={() => setMbti(mbti === m ? "" : m)}
+                className={"py-1.5 rounded-lg text-[11px] transition-all " + (mbti === m
+                  ? "bg-cemetery-accent text-white"
+                  : "bg-cemetery-surface border border-cemetery-border text-cemetery-ghost/60 hover:border-cemetery-accent/50")}>
+                {m}
+              </button>
+            ))}
           </div>
         </div>
         <div className="space-y-1">
