@@ -7,6 +7,9 @@ import { dbSsum } from "@/lib/ssum-client"
 import { calculateManseryeok, calculateCompatibility } from "@/lib/manseryeok"
 import { DateInput } from "@/components/DateInput"
 import { GenderSelect } from "@/components/GenderSelect"
+import { ChatStats } from "@/components/ChatStats"
+import { parseKakaoFile, analyzeChat } from "@/lib/kakao-parser"
+import type { ChatAnalysis } from "@/types"
 
 const SSUM_QUOTES = [
   "좋아하는 감정은 틀린 게 아니다. 타이밍이 안 맞았을 뿐.",
@@ -30,6 +33,7 @@ interface SsumRecord {
   id: string; nickname: string; photo?: string; duration: string; howWeMet: string
   myOpinion: string; signals: string[]; lastMessage: string; persona: string
   compatibility?: { score: number; elementHarmony: string }
+  chatAnalysis?: ChatAnalysis
   aiAnalysis?: string; createdAt: string
 }
 
@@ -56,6 +60,7 @@ export default function SsumPage() {
   const [factLevel, setFactLevel] = useState(3)
   const [quoteIdx, setQuoteIdx] = useState(0)
   const [saving, setSaving] = useState(false)
+  const [chatFile, setChatFile] = useState<File | null>(null)
 
   const hourOptions = [
     { value: "", label: "모름" }, { value: "0", label: "자시 (23:30~01:30)" }, { value: "2", label: "축시 (01:30~03:30)" },
@@ -97,6 +102,14 @@ export default function SsumPage() {
     if (!form.nickname || saving) return
     setSaving(true)
     try {
+      // 카톡 파일 분석
+      let chatAnalysis: ChatAnalysis | undefined
+      if (chatFile) {
+        const text = await chatFile.text()
+        const messages = parseKakaoFile(text, chatFile.name)
+        if (messages.length > 0) chatAnalysis = analyzeChat(messages)
+      }
+
       let manseryeok, myManseryeok, compatibility
       if (form.birthDate) {
         const [y, m, d] = form.birthDate.split("-").map(Number)
@@ -111,11 +124,12 @@ export default function SsumPage() {
         compatibility = { ...c, elementHarmony: myManseryeok.dominantElement + " ↔ " + manseryeok.dominantElement }
       }
 
-      await dbSsum.save({ id: editingId || undefined, ...form, signals, manseryeok, myManseryeok, compatibility })
+      await dbSsum.save({ id: editingId || undefined, ...form, signals, manseryeok, myManseryeok, compatibility, chatAnalysis })
       setShowForm(false)
       setEditingId(null)
       setForm({ nickname: "", birthDate: "", birthTime: "", myBirthDate: "", myBirthTime: "", duration: "", howWeMet: "", myOpinion: "", lastMessage: "", persona: "" })
       setSignals([])
+      setChatFile(null)
       reload()
     } catch (err) {
       alert(err instanceof Error ? err.message : "저장 실패")
@@ -289,6 +303,20 @@ export default function SsumPage() {
               placeholder="마지막 대화가 어떻게 끝났나요?" className="w-full px-3 py-2.5 bg-cemetery-surface border border-cemetery-border rounded-lg text-cemetery-text placeholder-cemetery-ghost/30 text-sm focus:border-cemetery-accent focus:outline-none" />
           </div>
 
+          {/* 카카오톡 파일 */}
+          <div>
+            <label className="block text-xs text-cemetery-ghost/50 mb-1">💬 카카오톡 대화 파일 (선택)</label>
+            <input type="file" accept=".txt,.csv"
+              onChange={(e) => setChatFile(e.target.files?.[0] || null)}
+              className="w-full px-3 py-2 bg-cemetery-surface border border-cemetery-border rounded-lg
+                text-cemetery-text text-sm file:mr-3 file:py-1 file:px-3 file:rounded file:border-0
+                file:bg-cemetery-accent file:text-white file:cursor-pointer file:text-xs" />
+            <p className="text-[10px] text-cemetery-ghost/30 mt-1">
+              카톡 &gt; 채팅방 &gt; 설정 &gt; 대화 내보내기 (.txt)
+              {chatFile && " ✓ 파일 선택됨"}
+            </p>
+          </div>
+
           <button type="button" onClick={handleSave} disabled={saving || !form.nickname}
             className="w-full py-3 bg-cemetery-accent hover:bg-cemetery-accent-dim disabled:opacity-40 rounded-xl font-semibold text-sm transition-colors cute-press">
             {saving ? "저장 중..." : editingId ? "✏️ 수정 저장" : "💔 썸붕 기록 저장"}
@@ -347,6 +375,14 @@ export default function SsumPage() {
                     <div className="text-center">
                       <p className="text-2xl font-bold text-cemetery-accent">{s.compatibility.score}%</p>
                       <p className="text-[10px] text-cemetery-ghost/40">{s.compatibility.elementHarmony}</p>
+                    </div>
+                  )}
+
+                  {/* 카톡 분석 */}
+                  {s.chatAnalysis && (
+                    <div className="bg-cemetery-surface/50 rounded-xl p-4 space-y-3">
+                      <p className="text-xs font-semibold text-cemetery-heading">💬 카카오톡 분석</p>
+                      <ChatStats analysis={s.chatAnalysis} />
                     </div>
                   )}
 

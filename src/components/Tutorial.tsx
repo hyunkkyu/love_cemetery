@@ -48,11 +48,17 @@ export function Tutorial() {
     return () => window.removeEventListener("show-tutorial", handler)
   }, [])
 
-  const handleClose = () => {
-    if (hideToday) {
+  const handleHideToday = (checked: boolean) => {
+    setHideToday(checked)
+    if (checked) {
       const today = new Date().toISOString().slice(0, 10)
       localStorage.setItem("tutorial-skip-date", today)
+    } else {
+      localStorage.removeItem("tutorial-skip-date")
     }
+  }
+
+  const handleClose = () => {
     setShow(false)
   }
 
@@ -93,7 +99,7 @@ export function Tutorial() {
           <input
             type="checkbox"
             checked={hideToday}
-            onChange={(e) => setHideToday(e.target.checked)}
+            onChange={(e) => handleHideToday(e.target.checked)}
             className="w-4 h-4 rounded border-cemetery-border bg-cemetery-surface accent-cemetery-accent"
           />
           <span className="text-[11px] text-cemetery-ghost/50">오늘 하루 보지 않기</span>
